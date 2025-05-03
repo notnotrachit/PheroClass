@@ -570,14 +570,31 @@ export function StudentDashboard() {
     return (
       <Tabs defaultValue="marketplace" className="w-full">
         <TabsList className="grid w-full grid-cols-3 bg-gray-800/70 border border-gray-700">
-          <TabsTrigger value="marketplace" className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300">Marketplace</TabsTrigger>
-          <TabsTrigger value="my-notes" className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300">My Notes</TabsTrigger>
-          <TabsTrigger value="upload" className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300">Upload Notes</TabsTrigger>
+          <TabsTrigger
+            value="marketplace"
+            className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
+          >
+            Marketplace
+          </TabsTrigger>
+          <TabsTrigger
+            value="my-notes"
+            className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
+          >
+            My Notes
+          </TabsTrigger>
+          <TabsTrigger
+            value="upload"
+            className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
+          >
+            Upload Notes
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="marketplace" className="mt-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-indigo-300">Notes Marketplace</h2>
+            <h2 className="text-2xl font-bold text-indigo-300">
+              Notes Marketplace
+            </h2>
           </div>
           <NotesMarketplace notesContractAddress={notesContractAddress} />
         </TabsContent>
@@ -595,7 +612,9 @@ export function StudentDashboard() {
           </div>
           <Card className="bg-gray-900/70 backdrop-blur-sm border border-gray-700">
             <CardHeader>
-              <CardTitle className="text-indigo-300">Share Your Notes</CardTitle>
+              <CardTitle className="text-indigo-300">
+                Share Your Notes
+              </CardTitle>
               <CardDescription className="text-gray-400">
                 Upload your notes as a PDF to share with classmates. Your notes
                 will be reviewed by the instructor before becoming available.

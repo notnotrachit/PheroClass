@@ -70,7 +70,8 @@ export default function CreateQuizForm({
             Authorization: `Bearer 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`,
           },
           body: JSON.stringify({
-            model: "meta-llama/llama-4-scout-17b-16e-instruct",
+            // model: "meta-llama/llama-4-scout-17b-16e-instruct",
+            model: "llama-3.3-70b-versatile",
             messages: [
               {
                 role: "user",

@@ -384,16 +384,18 @@ const RoleSelector = ({ address, setUserRole }) => {
         <div className="absolute top-3/4 -right-32 w-96 h-96 bg-purple-900/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
         <div className="absolute -bottom-32 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-blue-900/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
       </div>
-      
+
       {/* Dotted pattern background */}
       <div className="absolute inset-0 bg-grid-small-white/[0.2] -z-10"></div>
-      
+
       <div className="bg-gray-900/70 backdrop-blur-md p-8 rounded-xl border border-gray-700/50 shadow-xl max-w-md w-full">
         <div className="text-center mb-8">
           <div className="bg-indigo-900/50 rounded-full p-4 inline-flex mb-4">
             <BrainCircuit className="text-indigo-300" size={32} />
           </div>
-          <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text">Welcome to PheroClass</h2>
+          <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text">
+            Welcome to PheroClass
+          </h2>
           <p className="text-gray-400">Please select your role to continue</p>
           <div className="mt-4 py-2 px-4 bg-gray-800/70 rounded-full text-sm inline-block text-gray-300 border border-gray-700/50">
             Wallet: {address.slice(0, 6)}...{address.slice(-4)}

@@ -90,6 +90,33 @@ contract QuizContract is Ownable {
         quizzes[quizId].questionIds.push(questionId);
     }
     
+    // Add multiple questions to a quiz at once
+    function addMultipleQuestions(
+        uint256 quizId,
+        string[] memory questionTexts,
+        string[][] memory optionsArray,
+        uint8[] memory correctOptionIndices
+    ) public onlyOwner {
+        require(quizId > 0 && quizId <= quizCount, "Quiz does not exist");
+        require(questionTexts.length == optionsArray.length, "Question and options arrays must have same length");
+        require(questionTexts.length == correctOptionIndices.length, "Question and correct option arrays must have same length");
+        
+        for (uint256 i = 0; i < questionTexts.length; i++) {
+            require(correctOptionIndices[i] < optionsArray[i].length, "Invalid correct option index");
+            
+            questionCount++;
+            uint256 questionId = questionCount;
+            
+            questions[questionId] = Question({
+                questionText: questionTexts[i],
+                options: optionsArray[i],
+                correctOptionIndex: correctOptionIndices[i]
+            });
+            
+            quizzes[quizId].questionIds.push(questionId);
+        }
+    }
+    
     // Submit a quiz answer
     function submitQuiz(uint256 quizId, uint8[] memory selectedOptions) public {
         Quiz storage quiz = quizzes[quizId];
@@ -246,4 +273,4 @@ contract QuizContract is Ownable {
         
         return lectureQuizIds;
     }
-} 
+}

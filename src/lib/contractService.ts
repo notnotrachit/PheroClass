@@ -12,7 +12,7 @@ import NotesContract from './contracts/NotesContract.sol/NotesContract.json';
 
 const CONTRACT_ADDRESS = '0x27F610994df605E960790F8DD179168a52b14cDC';
 // TODO: Update this with the actual QuizContractFactory address after deployment
-const QUIZ_FACTORY_ADDRESS = '0x5452F7448830C75e389c280F3996ce4DFEEF39Da';
+const QUIZ_FACTORY_ADDRESS = '0xC1dc992aFF37C58e3f49478F25Ab0A89a17F00c4';
 // TODO: Update this with the actual NotesFactory address after deployment
 const NOTES_FACTORY_ADDRESS = '0x5A632EAA2E19543120c6852240cbc8de243226d9';
 
@@ -265,6 +265,40 @@ export const addQuizQuestion = async (
     await tx.wait();
 };
 
+export const addMultipleQuizQuestions = async (
+    quizContractAddress: string,
+    quizId: number,
+    questions: Array<{
+        questionText: string,
+        options: string[],
+        correctOptionIndex: number
+    }>,
+    provider: ethers.providers.Web3Provider
+) => {
+    try {
+        const signer = provider.getSigner();
+        const quizContract = new ethers.Contract(quizContractAddress, QuizContract.abi, signer);
+        
+        // Extract arrays for the contract function
+        const questionTexts = questions.map(q => q.questionText);
+        const optionsArray = questions.map(q => q.options);
+        const correctOptionIndices = questions.map(q => q.correctOptionIndex);
+        
+        const tx = await quizContract.addMultipleQuestions(
+            quizId, 
+            questionTexts, 
+            optionsArray, 
+            correctOptionIndices
+        );
+        await tx.wait();
+        
+        return true;
+    } catch (error) {
+        console.error("Error adding multiple questions:", error);
+        throw new Error(`Failed to add questions: ${error.message || "Unknown error"}`);
+    }
+};
+
 export const submitQuizAnswers = async (
     quizContractAddress: string,
     quizId: number,
@@ -298,7 +332,7 @@ export const getQuizzes = async (
                     expiresAt: quizDetails.expiresAt.toNumber ? quizDetails.expiresAt.toNumber() : Number(quizDetails.expiresAt),
                     lectureId: quizDetails.lectureId.toNumber ? quizDetails.lectureId.toNumber() : Number(quizDetails.lectureId),
                     isActive: quizDetails.isActive,
-                    questionCount: quizDetails.questionCountT.toNumber ? quizDetails.questionCountT.toNumber() : Number(quizDetails.questionCountT)
+                    questionCount: quizDetails.questionCount?.toNumber ? quizDetails.questionCount.toNumber() : Number(quizDetails.questionCount)
                 };
             } catch (error) {
                 console.error("Error processing quiz details:", error);
@@ -333,7 +367,7 @@ export const getQuizzesByLecture = async (
                     expiresAt: quizDetails.expiresAt.toNumber ? quizDetails.expiresAt.toNumber() : Number(quizDetails.expiresAt),
                     lectureId: quizDetails.lectureId.toNumber ? quizDetails.lectureId.toNumber() : Number(quizDetails.lectureId),
                     isActive: quizDetails.isActive,
-                    questionCount: quizDetails.questionCountT.toNumber ? quizDetails.questionCountT.toNumber() : Number(quizDetails.questionCountT)
+                    questionCount: quizDetails.questionCount?.toNumber ? quizDetails.questionCount.toNumber() : Number(quizDetails.questionCount)
                 };
             } catch (error) {
                 console.error("Error processing quiz details:", error);

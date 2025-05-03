@@ -113,6 +113,34 @@
           "type": "uint256"
         },
         {
+          "internalType": "string[]",
+          "name": "questionTexts",
+          "type": "string[]"
+        },
+        {
+          "internalType": "string[][]",
+          "name": "optionsArray",
+          "type": "string[][]"
+        },
+        {
+          "internalType": "uint8[]",
+          "name": "correctOptionIndices",
+          "type": "uint8[]"
+        }
+      ],
+      "name": "addMultipleQuestions",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "quizId",
+          "type": "uint256"
+        },
+        {
           "internalType": "string",
           "name": "questionText",
           "type": "string"
@@ -264,7 +292,7 @@
         },
         {
           "internalType": "uint256",
-          "name": "questionCountT",
+          "name": "questionCount",
           "type": "uint256"
         }
       ],

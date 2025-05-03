@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 interface CreateClassFormProps {
@@ -6,10 +6,13 @@ interface CreateClassFormProps {
   isCreating: boolean;
 }
 
-const CreateClassForm: React.FC<CreateClassFormProps> = ({ onSubmit, isCreating }) => {
+const CreateClassForm: React.FC<CreateClassFormProps> = ({
+  onSubmit,
+  isCreating,
+}) => {
   const [formData, setFormData] = useState({
-    name: '',
-    symbol: ''
+    name: "",
+    symbol: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -25,9 +28,9 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ onSubmit, isCreating 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -70,8 +73,8 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ onSubmit, isCreating 
         disabled={isLoading || !formData.name || !formData.symbol}
         className={`w-full transition-colors duration-200 flex items-center justify-center space-x-2 ${
           isLoading || !formData.name || !formData.symbol
-            ? 'bg-gray-700 text-gray-400'
-            : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white'
+            ? "bg-gray-700 text-gray-400"
+            : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
         }`}
       >
         {isLoading ? (
@@ -80,7 +83,7 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ onSubmit, isCreating 
             <span>Creating Class...</span>
           </>
         ) : (
-          'Create Class'
+          "Create Class"
         )}
       </Button>
     </form>

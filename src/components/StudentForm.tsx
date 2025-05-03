@@ -1,16 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 interface StudentFormProps {
-  onSubmit: (formData: { address: string; name: string; details: string }) => Promise<void>;
+  onSubmit: (formData: {
+    address: string;
+    name: string;
+    details: string;
+  }) => Promise<void>;
   isAddingStudent: boolean;
 }
 
-const StudentForm: React.FC<StudentFormProps> = ({ onSubmit, isAddingStudent }) => {
+const StudentForm: React.FC<StudentFormProps> = ({
+  onSubmit,
+  isAddingStudent,
+}) => {
   const [formData, setFormData] = useState({
-    address: '',
-    name: '',
-    details: ''
+    address: "",
+    name: "",
+    details: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -26,9 +33,9 @@ const StudentForm: React.FC<StudentFormProps> = ({ onSubmit, isAddingStudent }) 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -85,8 +92,8 @@ const StudentForm: React.FC<StudentFormProps> = ({ onSubmit, isAddingStudent }) 
         disabled={isLoading || !formData.address || !formData.name}
         className={`w-full transition-colors duration-200 flex items-center justify-center space-x-2 ${
           isLoading || !formData.address || !formData.name
-            ? 'bg-gray-700 text-gray-400'
-            : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white'
+            ? "bg-gray-700 text-gray-400"
+            : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
         }`}
       >
         {isLoading ? (
@@ -95,7 +102,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ onSubmit, isAddingStudent }) 
             <span>Adding Student...</span>
           </>
         ) : (
-          'Add Student'
+          "Add Student"
         )}
       </Button>
     </form>

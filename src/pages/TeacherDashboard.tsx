@@ -18,6 +18,7 @@ import {
   getAttendanceRecords,
   createQuiz,
   addQuizQuestion,
+  addMultipleQuizQuestions,
   getQuizzes,
   getQuizzesByLecture,
   getQuizResults,
@@ -168,6 +169,9 @@ export function TeacherDashboard() {
 
   const { provider, address } = useWalletContext();
 
+  // Add a new state for the selected class
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -181,6 +185,11 @@ export function TeacherDashboard() {
           lectureCount: 0,
         }));
         setClasses(formattedClasses);
+        
+        // Set the first class as selected by default if available
+        if (formattedClasses.length > 0 && !selectedClass) {
+          setSelectedClass(formattedClasses[0].classAddress);
+        }
 
         // For each class, fetch associated quiz contracts
         for (const classItem of formattedClasses) {
@@ -240,7 +249,7 @@ export function TeacherDashboard() {
       }
     };
     fetchInitialData();
-  }, [provider]);
+  }, [provider, selectedClass]);
 
   const handleCreateLecture = async (classAddress: string) => {
     try {
@@ -601,17 +610,17 @@ export function TeacherDashboard() {
           provider
         );
 
-        // Add questions to the quiz
-        for (const question of formData.questions) {
-          await addQuizQuestion(
-            quizContractAddress,
-            quizId,
-            question.text,
-            question.options,
-            question.correctOptionIndex,
-            provider
-          );
-        }
+        // Use the new addMultipleQuizQuestions function instead of adding questions one by one
+        await addMultipleQuizQuestions(
+          quizContractAddress,
+          quizId,
+          formData.questions.map((q) => ({
+            questionText: q.text,
+            options: q.options,
+            correctOptionIndex: q.correctOptionIndex,
+          })),
+          provider
+        );
 
         setConfirmationMessage(
           `Quiz "${formData.title}" created successfully!`
@@ -1135,442 +1144,550 @@ export function TeacherDashboard() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div className="mb-4 md:mb-0">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text">
+    <div className="flex h-screen bg-gray-950">
+      {/* Sidebar - Class Navigation */}
+      <div className="w-72 h-screen bg-gray-900 border-r border-gray-800 overflow-y-auto hidden md:block">
+        <div className="p-4 border-b border-gray-800">
+          <h2 className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text">
             Teacher Dashboard
-          </h1>
-          <p className="text-gray-400 mt-1">
-            Manage your classes, attendance, quizzes and more
-          </p>
+          </h2>
+          <p className="text-xs text-gray-500 mt-1">Welcome back, teacher</p>
         </div>
-        <Button
-          onClick={openCreateClassForm}
-          disabled={isCreatingClass}
-          className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
-        >
-          <PlusCircle className="h-4 w-4 mr-2" />
-          {isCreatingClass ? "Creating..." : "Create New Class"}
-        </Button>
-      </div>
-
-      {confirmationMessage && (
-        <div className="bg-indigo-900/30 border-l-4 border-indigo-500 p-4 mb-6 rounded-md shadow-md backdrop-blur-sm">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <CheckCircle className="h-5 w-5 text-indigo-400" />
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-indigo-200">{confirmationMessage}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isLoadingInitialData ? (
-        <div className="flex flex-col items-center justify-center h-64 bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800">
-          <LoaderCircle className="h-8 w-8 text-indigo-400 animate-spin mb-2" />
-          <p className="text-gray-400">Loading classes...</p>
-        </div>
-      ) : classes.length === 0 ? (
-        <div className="bg-gray-900/50 backdrop-blur-sm border border-dashed border-gray-700 rounded-lg p-12 text-center">
-          <GraduationCap className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-300 mb-2">
-            No Classes Found
-          </h3>
-          <p className="text-gray-400 mb-4">
-            You haven't created any classes yet. Create your first class to get
-            started.
-          </p>
+        
+        <div className="p-4">
           <Button
             onClick={openCreateClassForm}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+            disabled={isCreatingClass}
+            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
           >
             <PlusCircle className="h-4 w-4 mr-2" />
-            Create New Class
+            {isCreatingClass ? "Creating..." : "Create New Class"}
           </Button>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-8">
-          {classes.map((classItem) => (
-            <Card
-              key={classItem.classAddress}
-              className="overflow-hidden border border-gray-800 shadow-lg hover:shadow-indigo-500/10 transition-shadow duration-300 bg-gray-900/70 backdrop-blur-md"
+        
+        <div className="mt-2">
+          <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase">
+            Your Classes
+          </div>
+          {isLoadingInitialData ? (
+            <div className="flex items-center justify-center py-8">
+              <LoaderCircle className="h-5 w-5 text-indigo-400 animate-spin" />
+            </div>
+          ) : classes.length === 0 ? (
+            <div className="px-4 py-2 text-sm text-gray-500">
+              No classes available
+            </div>
+          ) : (
+            <div className="space-y-1 px-2">
+              {classes.map((classItem) => (
+                <Button
+                  key={classItem.classAddress}
+                  variant="ghost"
+                  onClick={() => setSelectedClass(classItem.classAddress)}
+                  className={`w-full justify-start text-sm px-3 py-2 ${
+                    selectedClass === classItem.classAddress
+                      ? "bg-indigo-900/50 text-indigo-300 hover:bg-indigo-800/50"
+                      : "text-gray-400 hover:bg-gray-800/50 hover:text-gray-300"
+                  }`}
+                >
+                  <GraduationCap className={`h-4 w-4 mr-2 ${
+                    selectedClass === classItem.classAddress
+                      ? "text-indigo-400"
+                      : "text-gray-500"
+                  }`} />
+                  <div className="truncate">{classItem.name}</div>
+                </Button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+  
+      {/* Mobile class selector dropdown - only visible on small screens */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-10 bg-gray-900 border-b border-gray-800 p-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text">
+            Teacher Dashboard
+          </h2>
+          <Button
+            onClick={openCreateClassForm}
+            disabled={isCreatingClass}
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+            size="sm"
+          >
+            <PlusCircle className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        <div className="mt-3">
+          {isLoadingInitialData ? (
+            <div className="flex items-center justify-center h-10">
+              <LoaderCircle className="h-5 w-5 text-indigo-400 animate-spin" />
+            </div>
+          ) : classes.length === 0 ? (
+            <div className="text-sm text-gray-500 p-2 bg-gray-800 rounded-md">
+              No classes available
+            </div>
+          ) : (
+            <select
+              className="w-full bg-gray-800 border border-gray-700 rounded-md p-2 text-gray-300"
+              value={selectedClass || ""}
+              onChange={(e) => setSelectedClass(e.target.value)}
             >
-              <CardHeader className="bg-gradient-to-r from-gray-800/80 to-gray-900/80 border-b border-gray-700 pb-4">
-                <div className="flex flex-col md:flex-row md:justify-between md:items-center">
-                  <div>
-                    <CardTitle className="text-xl font-bold text-white">
-                      {classItem.name}
-                    </CardTitle>
-                    <CardDescription className="flex items-center mt-1 text-gray-400">
-                      Class Address:
-                      <span className="text-xs bg-gray-800 rounded px-2 py-1 ml-2 font-mono text-gray-300 truncate max-w-xs">
-                        {classItem.classAddress}
-                      </span>
-                    </CardDescription>
-                  </div>
-                  <div className="flex mt-3 md:mt-0 space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openMintForm(classItem.classAddress)}
-                      className="text-xs border-indigo-600/30 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
-                    >
-                      <GraduationCap className="h-3.5 w-3.5 mr-1.5" /> Add
-                      Student
-                    </Button>
-                  </div>
+              <option value="" disabled>
+                Select a class
+              </option>
+              {classes.map((classItem) => (
+                <option key={classItem.classAddress} value={classItem.classAddress}>
+                  {classItem.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      </div>
+  
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto md:pt-0 pt-24 pb-6">
+        <div className="container mx-auto px-4 py-6 max-w-4xl">
+          {/* Confirmation Messages */}
+          {confirmationMessage && (
+            <div className="bg-indigo-900/30 border-l-4 border-indigo-500 p-4 mb-6 rounded-md backdrop-blur-sm">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <CheckCircle className="h-5 w-5 text-indigo-400" />
                 </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <Tabs defaultValue="lectures" className="w-full">
-                  <TabsList className="w-full rounded-none justify-start px-6 pt-4 bg-gray-800/80 border-b border-gray-700">
-                    <TabsTrigger
-                      value="lectures"
-                      className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
-                    >
-                      <BookOpen className="h-4 w-4 mr-2" />
-                      Lectures
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="quizzes"
-                      className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
-                    >
-                      <FilePieChart className="h-4 w-4 mr-2" />
-                      Quizzes
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="notes"
-                      className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      Notes
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="lectures" className="p-6 space-y-6">
-                    <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg space-y-4">
-                      <div className="flex flex-col md:flex-row md:items-end gap-4">
-                        <div className="flex-1">
-                          <Label
-                            htmlFor={`lectureTopic-${classItem.classAddress}`}
-                            className="text-sm font-medium text-indigo-300 mb-1 block"
-                          >
-                            Lecture Topic
-                          </Label>
-                          <Input
-                            id={`lectureTopic-${classItem.classAddress}`}
-                            value={
-                              lectureTopicsByClass[classItem.classAddress] || ""
-                            }
-                            onChange={(e) =>
-                              setLectureTopicsByClass((prev) => ({
-                                ...prev,
-                                [classItem.classAddress]: e.target.value,
-                              }))
-                            }
-                            placeholder="Enter lecture topic"
-                            className="w-full bg-gray-800/70 border-gray-700 text-gray-300 focus:border-indigo-500"
-                          />
-                        </div>
-                        <Button
-                          onClick={() =>
-                            handleCreateLecture(classItem.classAddress)
-                          }
-                          disabled={
-                            isCreatingLecture[classItem.classAddress] ||
-                            !lectureTopicsByClass[classItem.classAddress]
-                          }
-                          className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
-                        >
-                          {isCreatingLecture[classItem.classAddress]
-                            ? "Creating..."
-                            : "Create Lecture"}
-                        </Button>
+                <div className="ml-3">
+                  <p className="text-sm text-indigo-200">{confirmationMessage}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {isLoadingInitialData ? (
+            <div className="flex flex-col items-center justify-center h-64">
+              <LoaderCircle className="h-10 w-10 text-indigo-400 animate-spin mb-4" />
+              <p className="text-gray-400">Loading your dashboard...</p>
+            </div>
+          ) : classes.length === 0 ? (
+            <div className="bg-gray-900/50 backdrop-blur-sm border border-dashed border-gray-700 rounded-lg p-12 text-center">
+              <GraduationCap className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+              <h3 className="text-xl font-medium text-gray-300 mb-2">
+                Welcome to your teaching dashboard
+              </h3>
+              <p className="text-gray-400 mb-6 max-w-md mx-auto">
+                Create your first class to get started. You'll be able to manage lectures, 
+                take attendance, create quizzes, and enable student notes.
+              </p>
+              <Button
+                onClick={openCreateClassForm}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+              >
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Create Your First Class
+              </Button>
+            </div>
+          ) : !selectedClass ? (
+            <div className="text-center py-12">
+              <h3 className="text-lg font-medium text-gray-300 mb-2">
+                Select a class from the sidebar
+              </h3>
+              <p className="text-gray-500">
+                Choose one of your classes to view and manage
+              </p>
+            </div>
+          ) : (
+            // Selected class content
+            <>
+              {classes
+                .filter((classItem) => classItem.classAddress === selectedClass)
+                .map((classItem) => (
+                  <div key={classItem.classAddress} className="space-y-6">
+                    {/* Class Header */}
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
+                      <div className="mb-4 sm:mb-0">
+                        <h1 className="text-2xl font-bold text-white">{classItem.name}</h1>
+                        <p className="text-sm text-gray-400 mt-1 font-mono">
+                          {classItem.classAddress.slice(0, 6)}...{classItem.classAddress.slice(-4)}
+                        </p>
                       </div>
-
                       <Button
-                        onClick={() => fetchLectures(classItem.classAddress)}
-                        disabled={isFetchingLectures[classItem.classAddress]}
                         variant="outline"
-                        className="w-full border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
+                        size="sm"
+                        onClick={() => openMintForm(classItem.classAddress)}
+                        className="border-indigo-600/30 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
                       >
-                        {isFetchingLectures[classItem.classAddress]
-                          ? "Loading lectures..."
-                          : "Refresh Lectures"}
+                        <GraduationCap className="h-4 w-4 mr-2" /> Add Student
                       </Button>
-
-                      {lecturesByClass[classItem.classAddress]?.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                          {lecturesByClass[classItem.classAddress].map(
-                            (lecture) => (
-                              <div
-                                key={lecture.id}
-                                className="bg-gray-800/70 backdrop-blur-sm rounded-lg border border-gray-700 shadow-md hover:shadow-indigo-500/5 transition-shadow overflow-hidden"
-                              >
-                                <div className="p-4">
-                                  <div className="flex flex-col">
-                                    <h3 className="font-medium text-lg text-white">
-                                      {lecture.topic}
-                                    </h3>
-                                    <div className="flex items-center mt-1">
-                                      <Badge
-                                        variant="outline"
-                                        className="bg-gray-700/50 text-gray-300 border-gray-600"
-                                      >
-                                        ID: {lecture.id}
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col sm:flex-row gap-2 mt-4">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleTakeAttendance(
-                                          lecture.id,
-                                          classItem.classAddress
-                                        )
-                                      }
-                                      className="flex-1 border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
-                                    >
-                                      Take Attendance
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleViewAttendance(
-                                          lecture.id,
-                                          classItem.classAddress
-                                        )
-                                      }
-                                      className="flex-1 border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
-                                    >
-                                      <Eye className="h-4 w-4 mr-1" /> View
-                                      Attendance
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            )
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-center p-8 bg-gray-800/50 backdrop-blur-sm rounded-lg border border-dashed border-gray-700">
-                          <BookOpen className="h-8 w-8 mx-auto text-gray-500 mb-2" />
-                          <p className="text-gray-300 font-medium">
-                            No lectures available for this class.
-                          </p>
-                          <p className="text-sm text-gray-400 mt-1">
-                            Create your first lecture to get started.
-                          </p>
-                        </div>
-                      )}
                     </div>
-                  </TabsContent>
-
-                  <TabsContent value="quizzes" className="p-6 space-y-6">
-                    <div className="space-y-6">
-                      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                        <h3 className="text-lg font-semibold text-indigo-300">
-                          Quiz Management
-                        </h3>
-                        <div className="flex flex-col gap-2 sm:flex-row">
+  
+                    {/* Class Tabs */}
+                    <Tabs defaultValue="lectures" className="w-full">
+                      <TabsList className="w-full grid grid-cols-3 bg-gray-800/80 border border-gray-700 rounded-lg mb-6">
+                        <TabsTrigger
+                          value="lectures"
+                          className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
+                        >
+                          <BookOpen className="h-4 w-4 mr-2" />
+                          Lectures
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="quizzes"
+                          className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
+                        >
+                          <FilePieChart className="h-4 w-4 mr-2" />
+                          Quizzes
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="notes"
+                          className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
+                        >
+                          <FileText className="h-4 w-4 mr-2" />
+                          Notes
+                        </TabsTrigger>
+                      </TabsList>
+  
+                      {/* Lectures Tab */}
+                      <TabsContent value="lectures" className="space-y-6">
+                        <Card className="border-gray-800 bg-gray-900/70 backdrop-blur-sm shadow-lg">
+                          <CardHeader>
+                            <CardTitle className="text-lg text-white">Create New Lecture</CardTitle>
+                            <CardDescription>
+                              Add a new lecture to this class
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+                              <div className="flex-1">
+                                <Label
+                                  htmlFor={`lectureTopic-${classItem.classAddress}`}
+                                  className="text-sm font-medium text-gray-400 mb-1 block"
+                                >
+                                  Lecture Topic
+                                </Label>
+                                <Input
+                                  id={`lectureTopic-${classItem.classAddress}`}
+                                  value={
+                                    lectureTopicsByClass[classItem.classAddress] || ""
+                                  }
+                                  onChange={(e) =>
+                                    setLectureTopicsByClass((prev) => ({
+                                      ...prev,
+                                      [classItem.classAddress]: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="Enter lecture topic"
+                                  className="w-full bg-gray-800/70 border-gray-700 text-gray-300 focus:border-indigo-500"
+                                />
+                              </div>
+                              <Button
+                                onClick={() =>
+                                  handleCreateLecture(classItem.classAddress)
+                                }
+                                disabled={
+                                  isCreatingLecture[classItem.classAddress] ||
+                                  !lectureTopicsByClass[classItem.classAddress]
+                                }
+                                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                              >
+                                {isCreatingLecture[classItem.classAddress]
+                                  ? "Creating..."
+                                  : "Create Lecture"}
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+  
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-lg font-medium text-white">Lectures</h3>
+                          <Button
+                            onClick={() => fetchLectures(classItem.classAddress)}
+                            disabled={isFetchingLectures[classItem.classAddress]}
+                            variant="outline"
+                            size="sm"
+                            className="border-gray-700 bg-gray-800/50 text-gray-300 hover:bg-gray-800 hover:text-gray-200"
+                          >
+                            {isFetchingLectures[classItem.classAddress]
+                              ? <LoaderCircle className="h-4 w-4 animate-spin" />
+                              : "Refresh Lectures"}
+                          </Button>
+                        </div>
+  
+                        {lecturesByClass[classItem.classAddress]?.length > 0 ? (
+                          <div className="grid grid-cols-1 gap-4">
+                            {lecturesByClass[classItem.classAddress].map(
+                              (lecture) => (
+                                <Card
+                                  key={lecture.id}
+                                  className="border-gray-800 bg-gray-900/70 backdrop-blur-sm shadow-md hover:shadow-indigo-500/5 transition-shadow"
+                                >
+                                  <CardHeader className="pb-2">
+                                    <div className="flex justify-between items-start">
+                                      <div>
+                                        <CardTitle className="text-lg text-white">
+                                          {lecture.topic}
+                                        </CardTitle>
+                                        <CardDescription>
+                                          <Badge
+                                            variant="outline"
+                                            className="mt-2 bg-gray-800 text-gray-300 border-gray-700"
+                                          >
+                                            Lecture ID: {lecture.id}
+                                          </Badge>
+                                        </CardDescription>
+                                      </div>
+                                    </div>
+                                  </CardHeader>
+                                  <CardContent className="pt-3">
+                                    <div className="flex gap-2">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleTakeAttendance(
+                                            lecture.id,
+                                            classItem.classAddress
+                                          )
+                                        }
+                                        className="flex-1 text-sm border-indigo-700/30 bg-indigo-900/20 text-indigo-300 hover:bg-indigo-800/30"
+                                      >
+                                        Take Attendance
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleViewAttendance(
+                                            lecture.id,
+                                            classItem.classAddress
+                                          )
+                                        }
+                                        className="flex-1 text-sm border-indigo-700/30 bg-indigo-900/20 text-indigo-300 hover:bg-indigo-800/30"
+                                      >
+                                        <Eye className="h-3.5 w-3.5 mr-1.5" /> View Attendance
+                                      </Button>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              )
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8 bg-gray-800/50 backdrop-blur-sm rounded-lg border border-dashed border-gray-700">
+                            <BookOpen className="h-8 w-8 mx-auto text-gray-600 mb-2" />
+                            <p className="text-gray-300 font-medium">
+                              No lectures available
+                            </p>
+                            <p className="text-sm text-gray-400 mt-1">
+                              Create your first lecture using the form above
+                            </p>
+                          </div>
+                        )}
+                      </TabsContent>
+  
+                      {/* Quizzes Tab */}
+                      <TabsContent value="quizzes" className="space-y-6">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
+                          <h3 className="text-lg font-medium text-white mb-2 sm:mb-0">
+                            Quiz Management
+                          </h3>
                           {(!quizContractsByClass[classItem.classAddress] ||
-                            quizContractsByClass[classItem.classAddress]
-                              ?.length === 0) && (
+                            quizContractsByClass[classItem.classAddress]?.length === 0) ? (
                             <Button
-                              variant="outline"
                               onClick={() =>
                                 openLinkQuizContractForm(classItem.classAddress)
                               }
-                              className="w-full sm:w-auto border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
+                              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
                             >
-                              <Link className="h-4 w-4 mr-2" /> Enable Quiz
-                              Module
+                              <Link className="h-4 w-4 mr-2" /> Enable Quiz Module
                             </Button>
+                          ) : (
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => refreshQuizContracts(classItem.classAddress)}
+                                variant="outline"
+                                size="sm"
+                                className="border-gray-700 bg-gray-800/50 text-gray-300 hover:bg-gray-800 hover:text-gray-200"
+                              >
+                                Refresh Contracts
+                              </Button>
+                            </div>
                           )}
                         </div>
-                      </div>
-                      {quizContractsByClass[classItem.classAddress]?.length >
-                      0 ? (
-                        quizContractsByClass[classItem.classAddress].map(
-                          (quizContractAddress) => (
-                            <Card
-                              key={quizContractAddress}
-                              className="border border-gray-700 bg-gray-800/70 backdrop-blur-sm shadow-md overflow-hidden"
-                            >
-                              <CardHeader className="pb-3 bg-indigo-900/30 border-b border-gray-700">
-                                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
-                                  <div>
-                                    <CardTitle className="text-base font-medium text-indigo-300">
-                                      Quiz Contract
-                                    </CardTitle>
-                                    <CardDescription className="text-xs mt-1 break-all font-mono bg-gray-900/70 p-1 rounded text-gray-400">
-                                      {quizContractAddress}
-                                    </CardDescription>
-                                  </div>
-                                  <div className="flex flex-col xs:flex-row gap-2">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        openCreateQuizForm(
-                                          quizContractAddress,
-                                          classItem.classAddress
-                                        )
-                                      }
-                                      className="border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
-                                    >
-                                      <PlusCircle className="h-3 w-3 mr-1" />{" "}
-                                      Create Quiz
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        fetchQuizzes(quizContractAddress)
-                                      }
-                                      disabled={
-                                        isFetchingQuizzes[quizContractAddress]
-                                      }
-                                      className="border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
-                                    >
-                                      {isFetchingQuizzes[quizContractAddress]
-                                        ? "Refreshing..."
-                                        : "Refresh Quizzes"}
-                                    </Button>
-                                  </div>
-                                </div>
-                              </CardHeader>
-                              <CardContent className="p-0">
-                                {quizzesByContract[quizContractAddress]
-                                  ?.length > 0 ? (
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-                                    {quizzesByContract[quizContractAddress].map(
-                                      (quiz) => (
-                                        <div
-                                          key={quiz.id}
-                                          className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-700 shadow-md hover:shadow-indigo-500/5 transition-shadow overflow-hidden"
-                                        >
-                                          <div className="p-4">
-                                            <div className="flex items-start justify-between">
-                                              <div>
-                                                <h4 className="font-medium text-indigo-300">
-                                                  {quiz.title}
-                                                </h4>
-                                                <p className="text-sm text-gray-400 mt-1">
-                                                  {quiz.description}
-                                                </p>
+  
+                        {quizContractsByClass[classItem.classAddress]?.length > 0 ? (
+                          <div className="space-y-6">
+                            {quizContractsByClass[classItem.classAddress].map(
+                              (quizContractAddress) => (
+                                <Card
+                                  key={quizContractAddress}
+                                  className="border-gray-800 bg-gray-900/70 backdrop-blur-sm shadow-md"
+                                >
+                                  <CardHeader className="pb-3">
+                                    <div className="flex justify-between items-center">
+                                      <div>
+                                        <CardTitle className="text-lg text-white">
+                                          Quiz Contract
+                                        </CardTitle>
+                                        <CardDescription className="mt-1 font-mono text-xs text-gray-500 break-all">
+                                          {quizContractAddress}
+                                        </CardDescription>
+                                      </div>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          openCreateQuizForm(
+                                            quizContractAddress,
+                                            classItem.classAddress
+                                          )
+                                        }
+                                        className="border-indigo-700/30 bg-indigo-900/20 text-indigo-300 hover:bg-indigo-800/30"
+                                      >
+                                        <PlusCircle className="h-3.5 w-3.5 mr-1.5" /> Create Quiz
+                                      </Button>
+                                    </div>
+                                  </CardHeader>
+                                  
+                                  <CardContent className="p-0">
+                                    {isFetchingQuizzes[quizContractAddress] ? (
+                                      <div className="py-8 text-center">
+                                        <LoaderCircle className="h-6 w-6 mx-auto text-indigo-500 animate-spin mb-2" />
+                                        <p className="text-sm text-gray-400">Loading quizzes...</p>
+                                      </div>
+                                    ) : quizzesByContract[quizContractAddress]?.length > 0 ? (
+                                      <div className="divide-y divide-gray-800">
+                                        {quizzesByContract[quizContractAddress].map(
+                                          (quiz) => (
+                                            <div key={quiz.id} className="p-4">
+                                              <div className="flex justify-between items-start">
+                                                <div>
+                                                  <div className="flex items-center">
+                                                    <h4 className="font-medium text-white">
+                                                      {quiz.title}
+                                                    </h4>
+                                                    <Badge
+                                                      className={`ml-2 ${
+                                                        quiz.isActive
+                                                          ? "bg-green-900/50 text-green-300"
+                                                          : "bg-gray-700/50 text-gray-300"
+                                                      }`}
+                                                    >
+                                                      {quiz.isActive ? "Active" : "Inactive"}
+                                                    </Badge>
+                                                  </div>
+                                                  <p className="text-sm text-gray-400 mt-1">
+                                                    {quiz.description}
+                                                  </p>
+                                                </div>
                                               </div>
-                                              <Badge
-                                                className={
-                                                  quiz.isActive
-                                                    ? "bg-green-900/50 text-green-300"
-                                                    : "bg-gray-700/50 text-gray-300"
-                                                }
-                                              >
-                                                {quiz.isActive
-                                                  ? "Active"
-                                                  : "Inactive"}
-                                              </Badge>
-                                            </div>
-                                            <div className="grid grid-cols-3 gap-1 mt-3 text-xs text-gray-500">
-                                              <div className="flex items-center">
-                                                <span className="font-medium mr-1">
-                                                  Questions:
-                                                </span>{" "}
-                                                {quiz.questionCount}
+                                              
+                                              <div className="grid grid-cols-2 gap-2 mt-2 text-xs text-gray-500">
+                                                <div className="flex items-center">
+                                                  <span className="font-medium mr-1">Questions:</span>{" "}
+                                                  {quiz.questionCount}
+                                                </div>
+                                                <div className="flex items-center">
+                                                  <span className="font-medium mr-1">Expires:</span>{" "}
+                                                  {new Date(
+                                                    quiz.expiresAt * 1000
+                                                  ).toLocaleString()}
+                                                </div>
                                               </div>
-                                              <div className="col-span-2 flex items-center">
-                                                <span className="font-medium mr-1">
-                                                  Expires:
-                                                </span>{" "}
-                                                {new Date(
-                                                  quiz.expiresAt * 1000
-                                                ).toLocaleString()}
-                                              </div>
-                                            </div>
-                                            <div className="flex flex-col sm:flex-row gap-2 mt-4">
-                                              <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() =>
-                                                  handleViewQuizResults(
-                                                    quiz.id,
-                                                    quizContractAddress,
-                                                    classItem.classAddress,
-                                                    quiz.title
-                                                  )
-                                                }
-                                                className="flex-1 border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
-                                              >
-                                                View Results
-                                              </Button>
-                                              {quiz.isActive && (
+                                              
+                                              <div className="flex gap-2 mt-3">
                                                 <Button
                                                   variant="outline"
                                                   size="sm"
                                                   onClick={() =>
-                                                    handleDeactivateQuiz(
+                                                    handleViewQuizResults(
                                                       quiz.id,
-                                                      quizContractAddress
+                                                      quizContractAddress,
+                                                      classItem.classAddress,
+                                                      quiz.title
                                                     )
                                                   }
-                                                  className="flex-1 border-red-700 bg-red-900/30 text-red-300 hover:bg-red-800/50"
+                                                  className="flex-1 text-xs border-indigo-700/30 bg-indigo-900/20 text-indigo-300 hover:bg-indigo-800/30"
                                                 >
-                                                  Deactivate
+                                                  View Results
                                                 </Button>
-                                              )}
+                                                {quiz.isActive && (
+                                                  <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                      handleDeactivateQuiz(
+                                                        quiz.id,
+                                                        quizContractAddress
+                                                      )
+                                                    }
+                                                    className="flex-1 text-xs border-red-700/30 bg-red-900/20 text-red-300 hover:bg-red-800/30"
+                                                  >
+                                                    Deactivate
+                                                  </Button>
+                                                )}
+                                              </div>
                                             </div>
-                                          </div>
-                                        </div>
-                                      )
+                                          )
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <div className="text-center py-8 px-4">
+                                        <FilePieChart className="h-8 w-8 mx-auto text-gray-600 mb-2" />
+                                        <p className="text-gray-300 font-medium">
+                                          No quizzes available
+                                        </p>
+                                        <p className="text-sm text-gray-400 mt-1">
+                                          Create your first quiz by clicking the button above
+                                        </p>
+                                      </div>
                                     )}
-                                  </div>
-                                ) : (
-                                  <div className="text-center p-8 bg-gray-800/50 backdrop-blur-sm rounded-lg border border-dashed border-gray-700 text-gray-400">
-                                    <FilePieChart className="h-8 w-8 mx-auto text-gray-500 mb-2" />
-                                    <p className="text-gray-300 font-medium">
-                                      No quiz contracts linked to this class
-                                      yet.
-                                    </p>
-                                    <p className="text-sm text-gray-400 mt-1">
-                                      Enable the quiz module to create quizzes.
-                                    </p>
-                                  </div>
-                                )}
-                              </CardContent>
-                            </Card>
-                          )
-                        )
-                      ) : (
-                        <div className="text-center p-8 bg-gray-800/50 backdrop-blur-sm rounded-lg border border-dashed border-gray-700 text-gray-400">
-                          <FilePieChart className="h-8 w-8 mx-auto text-gray-500 mb-2" />
-                          <p className="text-gray-300 font-medium">
-                            No quiz contracts linked to this class yet.
-                          </p>
-                          <p className="text-sm text-gray-400 mt-1">
-                            Enable the quiz module to create quizzes.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </TabsContent>
+                                  </CardContent>
+                                </Card>
+                              )
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-center py-12 bg-gray-800/50 backdrop-blur-sm rounded-lg border border-dashed border-gray-700">
+                            <FilePieChart className="h-12 w-12 mx-auto text-gray-600 mb-3" />
+                            <p className="text-gray-300 font-medium">
+                              Quiz module not enabled
+                            </p>
+                            <p className="text-sm text-gray-400 mt-1 mb-4 max-w-md mx-auto">
+                              Enable the quiz module to create and manage quizzes for your students
+                            </p>
+                            <Button
+                              onClick={() => openLinkQuizContractForm(classItem.classAddress)}
+                              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                            >
+                              <Link className="h-4 w-4 mr-2" /> Enable Quiz Module
+                            </Button>
+                          </div>
+                        )}
+                      </TabsContent>
 
-                  <TabsContent value="notes" className="p-6">
-                    {renderNotesSection(classItem.classAddress, classItem.name)}
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-          ))}
+                      {/* Notes Tab */}
+                      <TabsContent value="notes" className="space-y-6">
+                        <Card className="border-gray-800 bg-gray-900/70 backdrop-blur-sm shadow-md">
+                          <CardHeader>
+                            <CardTitle className="text-lg text-white">Notes Management</CardTitle>
+                            <CardDescription>
+                              Enable students to share and purchase notes from each other
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            {renderNotesSection(classItem.classAddress, classItem.name)}
+                          </CardContent>
+                        </Card>
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                ))}
+            </>
+          )}
         </div>
-      )}
-
+      </div>
+      
       {isPopupOpen && popupContent && (
         <Popup
           title={popupContent.title}
