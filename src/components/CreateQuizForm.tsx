@@ -225,24 +225,30 @@ export default function CreateQuizForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="title">Quiz Title</Label>
+        <Label htmlFor="title" className="text-indigo-300">
+          Quiz Title
+        </Label>
         <Input
           id="title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Enter quiz title"
           required
+          className="bg-gray-800 border-gray-700 text-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description" className="text-indigo-300">
+          Description
+        </Label>
         <Textarea
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Enter quiz description"
           required
+          className="bg-gray-800 border-gray-700 text-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
         />
       </div>
 
@@ -250,34 +256,43 @@ export default function CreateQuizForm({
         type="button"
         onClick={handleAIGeneration}
         variant="outline"
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
       >
         Use AI Generation
       </Button>
 
       <div className="space-y-2">
-        <Label htmlFor="expiryDate">Expiry Date</Label>
+        <Label htmlFor="expiryDate" className="text-indigo-300">
+          Expiry Date
+        </Label>
         <Input
           id="expiryDate"
           type="datetime-local"
           value={expiryDate}
           onChange={(e) => setExpiryDate(e.target.value)}
           required
+          className="bg-gray-800 border-gray-700 text-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="lectureId">Associated Lecture</Label>
+        <Label htmlFor="lectureId" className="text-indigo-300">
+          Associated Lecture
+        </Label>
         <Select
           onValueChange={(value) => setSelectedLectureId(Number(value))}
           required
         >
-          <SelectTrigger>
+          <SelectTrigger className="bg-gray-800 border-gray-700 text-gray-200">
             <SelectValue placeholder="Select lecture" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-gray-800 border-gray-700 text-gray-200">
             {lectures.map((lecture) => (
-              <SelectItem key={lecture.id} value={lecture.id.toString()}>
+              <SelectItem
+                key={lecture.id}
+                value={lecture.id.toString()}
+                className="text-gray-200 focus:bg-indigo-900/50 focus:text-white"
+              >
                 {lecture.topic}
               </SelectItem>
             ))}
@@ -287,23 +302,29 @@ export default function CreateQuizForm({
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Questions</h3>
+          <h3 className="text-lg font-semibold text-indigo-300">Questions</h3>
           <Button
             type="button"
             onClick={addQuestion}
             variant="outline"
             size="sm"
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
           >
             <PlusCircle className="h-4 w-4" /> Add Question
           </Button>
         </div>
 
         {questions.map((question, qIndex) => (
-          <div key={qIndex} className="p-4 border rounded-md space-y-4">
+          <div
+            key={qIndex}
+            className="p-4 border border-gray-700 bg-gray-800/70 backdrop-blur-sm rounded-md space-y-4"
+          >
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 space-y-2">
-                <Label htmlFor={`question-${qIndex}`}>
+                <Label
+                  htmlFor={`question-${qIndex}`}
+                  className="text-indigo-300"
+                >
                   Question {qIndex + 1}
                 </Label>
                 <Textarea
@@ -314,6 +335,7 @@ export default function CreateQuizForm({
                   }
                   placeholder="Enter question text"
                   required
+                  className="bg-gray-800 border-gray-700 text-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
                 />
               </div>
               {questions.length > 1 && (
@@ -322,7 +344,7 @@ export default function CreateQuizForm({
                   onClick={() => removeQuestion(qIndex)}
                   variant="destructive"
                   size="icon"
-                  className="mt-7"
+                  className="mt-7 bg-red-900/50 border-red-700 hover:bg-red-800/70"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -331,14 +353,14 @@ export default function CreateQuizForm({
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Options</Label>
+                <Label className="text-indigo-300">Options</Label>
                 {question.options.length < 5 && (
                   <Button
                     type="button"
                     onClick={() => addOption(qIndex)}
                     variant="outline"
                     size="sm"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
                   >
                     <PlusCircle className="h-3 w-3" /> Option
                   </Button>
@@ -355,6 +377,7 @@ export default function CreateQuizForm({
                       }
                       placeholder={`Option ${oIndex + 1}`}
                       required
+                      className="bg-gray-800 border-gray-700 text-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
                     />
                     <Button
                       type="button"
@@ -365,6 +388,11 @@ export default function CreateQuizForm({
                           : "outline"
                       }
                       size="sm"
+                      className={
+                        question.correctOptionIndex === oIndex
+                          ? "bg-green-800 text-green-100 hover:bg-green-700"
+                          : "border-gray-700 bg-gray-800/70 text-gray-300 hover:bg-gray-700"
+                      }
                     >
                       Correct
                     </Button>
@@ -376,6 +404,7 @@ export default function CreateQuizForm({
                       onClick={() => removeOption(qIndex, oIndex)}
                       variant="destructive"
                       size="icon"
+                      className="bg-red-900/50 border-red-700 hover:bg-red-800/70"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -387,7 +416,13 @@ export default function CreateQuizForm({
         ))}
       </div>
 
-      <Button type="submit" disabled={isCreatingQuiz}>
+      <Button
+        type="submit"
+        disabled={isCreatingQuiz}
+        className={`bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white ${
+          isCreatingQuiz ? "opacity-70" : ""
+        }`}
+      >
         {isCreatingQuiz ? "Creating Quiz..." : "Create Quiz"}
       </Button>
     </form>

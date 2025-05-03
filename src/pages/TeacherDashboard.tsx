@@ -351,10 +351,16 @@ export function TeacherDashboard() {
     const qrContent = (
       <div className="space-y-4">
         <div className="flex flex-col items-center">
-          <h3 className="text-lg font-semibold mb-4">
+          <h3 className="text-lg font-semibold mb-4 text-indigo-300">
             Scan QR Code to Mark Attendance
           </h3>
-          <canvas id={`qr-code-${id}`} className="mb-4" />
+          <div className="p-4 bg-white rounded-lg shadow-md">
+            <canvas id={`qr-code-${id}`} className="mb-2" />
+          </div>
+          <p className="text-sm text-gray-400 mt-3 text-center">
+            Students can scan this QR code to mark their attendance for this
+            lecture.
+          </p>
         </div>
       </div>
     );
@@ -421,34 +427,40 @@ export function TeacherDashboard() {
       <div className="space-y-4">
         <div className="mb-4">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Attendance Records</h3>
+            <h3 className="text-lg font-semibold text-indigo-300">
+              Attendance Records
+            </h3>
             <Button
               onClick={() => downloadAttendanceData(classAddress, lectureId)}
-              className="bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
             >
               Download Records
             </Button>
           </div>
 
           <div className="mb-6">
-            <h4 className="text-md font-semibold mb-2">Attendance:</h4>
+            <h4 className="text-md font-semibold mb-2 text-gray-300">
+              Attendance:
+            </h4>
             {attendanceRecords.length > 0 ? (
               <ul className="space-y-2">
                 {attendanceRecords.map((student) => (
                   <li
                     key={student.address}
-                    className="p-2 bg-gray-100 rounded-lg"
+                    className="p-2 bg-gray-800/70 backdrop-blur-sm rounded-lg border border-gray-700"
                   >
-                    <span className="font-semibold">{student.name}</span>
+                    <span className="font-semibold text-white">
+                      {student.name}
+                    </span>
                     <br />
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-400">
                       {student.address}
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p>No attendance records yet.</p>
+              <p className="text-gray-400">No attendance records yet.</p>
             )}
           </div>
         </div>
@@ -769,7 +781,7 @@ export function TeacherDashboard() {
         title: `Results: ${title}`,
         content: (
           <div className="space-y-4">
-            <div className="text-sm text-muted-foreground mb-4">
+            <div className="text-sm text-gray-400 mb-4">
               {results.length}{" "}
               {results.length === 1 ? "student has" : "students have"} attempted
               this quiz
@@ -777,36 +789,37 @@ export function TeacherDashboard() {
 
             {results.length > 0 ? (
               <div className="space-y-2">
-                <div className="grid grid-cols-2 font-medium text-sm py-2 border-b">
-                  <div>Student</div>
-                  <div>Score</div>
-                  {/* <div>Completion Time</div> */}
+                <div className="grid grid-cols-2 font-medium text-sm py-2 border-b border-gray-700">
+                  <div className="text-indigo-300">Student</div>
+                  <div className="text-indigo-300">Score</div>
                 </div>
 
                 {results.map((result, index) => (
                   <div
                     key={index}
-                    className="grid grid-cols-2 text-sm py-2 border-b border-gray-100"
+                    className="grid grid-cols-2 text-sm py-2 border-b border-gray-700"
                   >
-                    <div>{result.name}</div>
-                    <div>
+                    <div className="text-white">{result.name}</div>
+                    <div className="text-white">
                       {result.score}/{result.totalQuestions} (
                       {Math.round((result.score / result.totalQuestions) * 100)}
                       %)
                     </div>
-                    {/* <div>{new Date(result.attemptedAt).toLocaleString()}</div> */}
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-6 text-muted-foreground">
-                No students have attempted this quiz yet.
+              <div className="text-center py-6 bg-gray-800/50 backdrop-blur-sm rounded-lg border border-dashed border-gray-700">
+                <FilePieChart className="h-8 w-8 mx-auto text-gray-500 mb-2" />
+                <p className="text-gray-300">
+                  No students have attempted this quiz yet.
+                </p>
               </div>
             )}
 
             <Button
               onClick={() => downloadQuizResults(quizId, title, results)}
-              className="w-full mt-4"
+              className="w-full mt-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
             >
               Download Results CSV
             </Button>
@@ -941,13 +954,17 @@ export function TeacherDashboard() {
       title: "Quiz Management",
       content: (
         <div className="space-y-4">
+          <p className="text-gray-300 mb-4">
+            Enable the quiz feature to create and manage quizzes for your
+            students.
+          </p>
           {newQuizContractAddress ? (
             <Button
               onClick={() =>
                 handleLinkQuizContract(classAddress, newQuizContractAddress)
               }
               disabled={isLinkingQuizContract}
-              className="w-full"
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
             >
               {isLinkingQuizContract ? "Linking..." : "Link Existing Contract"}
             </Button>
@@ -955,7 +972,7 @@ export function TeacherDashboard() {
             <Button
               onClick={() => handleDeployAndLinkQuizContract(classAddress)}
               disabled={isDeployingQuizContract || isLinkingQuizContract}
-              className="w-full"
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
             >
               {isDeployingQuizContract
                 ? "Deploying Contract..."
@@ -1061,17 +1078,20 @@ export function TeacherDashboard() {
       return (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">Notes Management</h3>
+            <h3 className="text-lg font-medium text-indigo-300">
+              Notes Management
+            </h3>
             <Button
               onClick={() => handleCreateNotesContract(classAddress, className)}
               disabled={isCreatingNotesContract}
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
             >
               {isCreatingNotesContract
                 ? "Creating..."
                 : "Create Notes Contract"}
             </Button>
           </div>
-          <p className="text-muted-foreground">
+          <p className="text-gray-400">
             Create a Notes contract to enable students to upload and share their
             notes as NFTs.
           </p>
@@ -1082,25 +1102,30 @@ export function TeacherDashboard() {
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-medium">Notes Management</h3>
-          <p className="text-sm text-green-600">Notes enabled</p>
+          <h3 className="text-lg font-medium text-indigo-300">
+            Notes Management
+          </h3>
+          <p className="text-sm text-green-400">Notes enabled</p>
         </div>
 
-        <Card>
+        <Card className="bg-gray-900/50 backdrop-blur-sm border border-gray-700">
           <CardHeader>
             <div className="flex justify-between items-center">
-              <CardTitle>Student Notes</CardTitle>
-              <Badge variant="outline">
+              <CardTitle className="text-indigo-300">Student Notes</CardTitle>
+              <Badge
+                variant="outline"
+                className="bg-gray-800 text-gray-300 border-gray-700"
+              >
                 Contract: {notesContractAddress.slice(0, 6)}...
                 {notesContractAddress.slice(-4)}
               </Badge>
             </div>
-            <CardDescription>
+            <CardDescription className="text-gray-400">
               Students can share and purchase notes directly from each other
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gray-400">
               Notes sharing is enabled for this class.
             </p>
           </CardContent>
@@ -1113,13 +1138,17 @@ export function TeacherDashboard() {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div className="mb-4 md:mb-0">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 text-transparent bg-clip-text">Teacher Dashboard</h1>
-          <p className="text-gray-500 mt-1">Manage your classes, attendance, quizzes and more</p>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text">
+            Teacher Dashboard
+          </h1>
+          <p className="text-gray-400 mt-1">
+            Manage your classes, attendance, quizzes and more
+          </p>
         </div>
         <Button
           onClick={openCreateClassForm}
           disabled={isCreatingClass}
-          className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white"
+          className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
         >
           <PlusCircle className="h-4 w-4 mr-2" />
           {isCreatingClass ? "Creating..." : "Create New Class"}
@@ -1127,31 +1156,36 @@ export function TeacherDashboard() {
       </div>
 
       {confirmationMessage && (
-        <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-md shadow-sm">
+        <div className="bg-indigo-900/30 border-l-4 border-indigo-500 p-4 mb-6 rounded-md shadow-md backdrop-blur-sm">
           <div className="flex">
             <div className="flex-shrink-0">
-              <CheckCircle className="h-5 w-5 text-green-500" />
+              <CheckCircle className="h-5 w-5 text-indigo-400" />
             </div>
             <div className="ml-3">
-              <p className="text-sm text-green-700">{confirmationMessage}</p>
+              <p className="text-sm text-indigo-200">{confirmationMessage}</p>
             </div>
           </div>
         </div>
       )}
 
       {isLoadingInitialData ? (
-        <div className="flex flex-col items-center justify-center h-64 bg-gray-50 rounded-lg border border-gray-100">
-          <LoaderCircle className="h-8 w-8 text-indigo-600 animate-spin mb-2" />
-          <p className="text-gray-600">Loading classes...</p>
+        <div className="flex flex-col items-center justify-center h-64 bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800">
+          <LoaderCircle className="h-8 w-8 text-indigo-400 animate-spin mb-2" />
+          <p className="text-gray-400">Loading classes...</p>
         </div>
       ) : classes.length === 0 ? (
-        <div className="bg-gray-50 border border-dashed border-gray-200 rounded-lg p-12 text-center">
-          <GraduationCap className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Classes Found</h3>
-          <p className="text-gray-500 mb-4">You haven't created any classes yet. Create your first class to get started.</p>
-          <Button 
+        <div className="bg-gray-900/50 backdrop-blur-sm border border-dashed border-gray-700 rounded-lg p-12 text-center">
+          <GraduationCap className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-300 mb-2">
+            No Classes Found
+          </h3>
+          <p className="text-gray-400 mb-4">
+            You haven't created any classes yet. Create your first class to get
+            started.
+          </p>
+          <Button
             onClick={openCreateClassForm}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
           >
             <PlusCircle className="h-4 w-4 mr-2" />
             Create New Class
@@ -1160,16 +1194,19 @@ export function TeacherDashboard() {
       ) : (
         <div className="grid grid-cols-1 gap-8">
           {classes.map((classItem) => (
-            <Card key={classItem.classAddress} className="overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow duration-300">
-              <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b pb-4">
+            <Card
+              key={classItem.classAddress}
+              className="overflow-hidden border border-gray-800 shadow-lg hover:shadow-indigo-500/10 transition-shadow duration-300 bg-gray-900/70 backdrop-blur-md"
+            >
+              <CardHeader className="bg-gradient-to-r from-gray-800/80 to-gray-900/80 border-b border-gray-700 pb-4">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center">
                   <div>
-                    <CardTitle className="text-xl font-bold text-gray-800">
+                    <CardTitle className="text-xl font-bold text-white">
                       {classItem.name}
                     </CardTitle>
-                    <CardDescription className="flex items-center mt-1">
-                      Class Address: 
-                      <span className="text-xs bg-gray-100 rounded px-2 py-1 ml-2 font-mono text-gray-600 truncate max-w-xs">
+                    <CardDescription className="flex items-center mt-1 text-gray-400">
+                      Class Address:
+                      <span className="text-xs bg-gray-800 rounded px-2 py-1 ml-2 font-mono text-gray-300 truncate max-w-xs">
                         {classItem.classAddress}
                       </span>
                     </CardDescription>
@@ -1179,40 +1216,55 @@ export function TeacherDashboard() {
                       variant="outline"
                       size="sm"
                       onClick={() => openMintForm(classItem.classAddress)}
-                      className="text-xs border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                      className="text-xs border-indigo-600/30 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
                     >
-                      <GraduationCap className="h-3.5 w-3.5 mr-1.5" /> Add Student
+                      <GraduationCap className="h-3.5 w-3.5 mr-1.5" /> Add
+                      Student
                     </Button>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="p-0">
                 <Tabs defaultValue="lectures" className="w-full">
-                  <TabsList className="w-full rounded-none justify-start px-6 pt-4 bg-white border-b">
-                    <TabsTrigger value="lectures" className="data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700">
+                  <TabsList className="w-full rounded-none justify-start px-6 pt-4 bg-gray-800/80 border-b border-gray-700">
+                    <TabsTrigger
+                      value="lectures"
+                      className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
+                    >
                       <BookOpen className="h-4 w-4 mr-2" />
                       Lectures
                     </TabsTrigger>
-                    <TabsTrigger value="quizzes" className="data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700">
+                    <TabsTrigger
+                      value="quizzes"
+                      className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
+                    >
                       <FilePieChart className="h-4 w-4 mr-2" />
                       Quizzes
                     </TabsTrigger>
-                    <TabsTrigger value="notes" className="data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700">
+                    <TabsTrigger
+                      value="notes"
+                      className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
+                    >
                       <FileText className="h-4 w-4 mr-2" />
                       Notes
                     </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="lectures" className="p-6 space-y-6">
-                    <div className="bg-white rounded-lg space-y-4">
+                    <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg space-y-4">
                       <div className="flex flex-col md:flex-row md:items-end gap-4">
                         <div className="flex-1">
-                          <Label htmlFor={`lectureTopic-${classItem.classAddress}`} className="text-sm font-medium mb-1 block">
+                          <Label
+                            htmlFor={`lectureTopic-${classItem.classAddress}`}
+                            className="text-sm font-medium text-indigo-300 mb-1 block"
+                          >
                             Lecture Topic
                           </Label>
                           <Input
                             id={`lectureTopic-${classItem.classAddress}`}
-                            value={lectureTopicsByClass[classItem.classAddress] || ""}
+                            value={
+                              lectureTopicsByClass[classItem.classAddress] || ""
+                            }
                             onChange={(e) =>
                               setLectureTopicsByClass((prev) => ({
                                 ...prev,
@@ -1220,16 +1272,18 @@ export function TeacherDashboard() {
                               }))
                             }
                             placeholder="Enter lecture topic"
-                            className="w-full"
+                            className="w-full bg-gray-800/70 border-gray-700 text-gray-300 focus:border-indigo-500"
                           />
                         </div>
                         <Button
-                          onClick={() => handleCreateLecture(classItem.classAddress)}
+                          onClick={() =>
+                            handleCreateLecture(classItem.classAddress)
+                          }
                           disabled={
                             isCreatingLecture[classItem.classAddress] ||
                             !lectureTopicsByClass[classItem.classAddress]
                           }
-                          className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                          className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
                         >
                           {isCreatingLecture[classItem.classAddress]
                             ? "Creating..."
@@ -1241,7 +1295,7 @@ export function TeacherDashboard() {
                         onClick={() => fetchLectures(classItem.classAddress)}
                         disabled={isFetchingLectures[classItem.classAddress]}
                         variant="outline"
-                        className="w-full text-indigo-600 hover:bg-indigo-50 border-indigo-200"
+                        className="w-full border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
                       >
                         {isFetchingLectures[classItem.classAddress]
                           ? "Loading lectures..."
@@ -1254,15 +1308,18 @@ export function TeacherDashboard() {
                             (lecture) => (
                               <div
                                 key={lecture.id}
-                                className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+                                className="bg-gray-800/70 backdrop-blur-sm rounded-lg border border-gray-700 shadow-md hover:shadow-indigo-500/5 transition-shadow overflow-hidden"
                               >
                                 <div className="p-4">
                                   <div className="flex flex-col">
-                                    <h3 className="font-medium text-lg text-gray-900">
+                                    <h3 className="font-medium text-lg text-white">
                                       {lecture.topic}
                                     </h3>
                                     <div className="flex items-center mt-1">
-                                      <Badge variant="outline" className="bg-gray-100 text-gray-600 hover:bg-gray-100">
+                                      <Badge
+                                        variant="outline"
+                                        className="bg-gray-700/50 text-gray-300 border-gray-600"
+                                      >
                                         ID: {lecture.id}
                                       </Badge>
                                     </div>
@@ -1277,7 +1334,7 @@ export function TeacherDashboard() {
                                           classItem.classAddress
                                         )
                                       }
-                                      className="flex-1 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                                      className="flex-1 border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
                                     >
                                       Take Attendance
                                     </Button>
@@ -1290,7 +1347,7 @@ export function TeacherDashboard() {
                                           classItem.classAddress
                                         )
                                       }
-                                      className="flex-1 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                                      className="flex-1 border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
                                     >
                                       <Eye className="h-4 w-4 mr-1" /> View
                                       Attendance
@@ -1302,10 +1359,14 @@ export function TeacherDashboard() {
                           )}
                         </div>
                       ) : (
-                        <div className="text-center p-8 bg-gray-50 rounded-lg border border-dashed border-gray-200 text-gray-500">
-                          <BookOpen className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                          <p>No lectures available for this class.</p>
-                          <p className="text-sm mt-1">Create your first lecture to get started.</p>
+                        <div className="text-center p-8 bg-gray-800/50 backdrop-blur-sm rounded-lg border border-dashed border-gray-700">
+                          <BookOpen className="h-8 w-8 mx-auto text-gray-500 mb-2" />
+                          <p className="text-gray-300 font-medium">
+                            No lectures available for this class.
+                          </p>
+                          <p className="text-sm text-gray-400 mt-1">
+                            Create your first lecture to get started.
+                          </p>
                         </div>
                       )}
                     </div>
@@ -1314,34 +1375,41 @@ export function TeacherDashboard() {
                   <TabsContent value="quizzes" className="p-6 space-y-6">
                     <div className="space-y-6">
                       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                        <h3 className="text-lg font-semibold text-gray-900">Quiz Management</h3>
+                        <h3 className="text-lg font-semibold text-indigo-300">
+                          Quiz Management
+                        </h3>
                         <div className="flex flex-col gap-2 sm:flex-row">
                           {(!quizContractsByClass[classItem.classAddress] ||
-                            quizContractsByClass[classItem.classAddress]?.length === 0) && (
+                            quizContractsByClass[classItem.classAddress]
+                              ?.length === 0) && (
                             <Button
                               variant="outline"
                               onClick={() =>
                                 openLinkQuizContractForm(classItem.classAddress)
                               }
-                              className="w-full sm:w-auto bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200"
+                              className="w-full sm:w-auto border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
                             >
-                              <Link className="h-4 w-4 mr-2" /> Enable Quiz Module
+                              <Link className="h-4 w-4 mr-2" /> Enable Quiz
+                              Module
                             </Button>
                           )}
                         </div>
                       </div>
-
-                      {quizContractsByClass[classItem.classAddress]?.length > 0 ? (
+                      {quizContractsByClass[classItem.classAddress]?.length >
+                      0 ? (
                         quizContractsByClass[classItem.classAddress].map(
                           (quizContractAddress) => (
-                            <Card key={quizContractAddress} className="border border-gray-200 shadow-sm overflow-hidden">
-                              <CardHeader className="pb-3 bg-indigo-50/50">
+                            <Card
+                              key={quizContractAddress}
+                              className="border border-gray-700 bg-gray-800/70 backdrop-blur-sm shadow-md overflow-hidden"
+                            >
+                              <CardHeader className="pb-3 bg-indigo-900/30 border-b border-gray-700">
                                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
                                   <div>
-                                    <CardTitle className="text-base font-medium text-gray-900">
+                                    <CardTitle className="text-base font-medium text-indigo-300">
                                       Quiz Contract
                                     </CardTitle>
-                                    <CardDescription className="text-xs mt-1 break-all font-mono bg-white/70 p-1 rounded text-gray-600">
+                                    <CardDescription className="text-xs mt-1 break-all font-mono bg-gray-900/70 p-1 rounded text-gray-400">
                                       {quizContractAddress}
                                     </CardDescription>
                                   </div>
@@ -1355,7 +1423,7 @@ export function TeacherDashboard() {
                                           classItem.classAddress
                                         )
                                       }
-                                      className="border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50"
+                                      className="border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
                                     >
                                       <PlusCircle className="h-3 w-3 mr-1" />{" "}
                                       Create Quiz
@@ -1369,7 +1437,7 @@ export function TeacherDashboard() {
                                       disabled={
                                         isFetchingQuizzes[quizContractAddress]
                                       }
-                                      className="border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50"
+                                      className="border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
                                     >
                                       {isFetchingQuizzes[quizContractAddress]
                                         ? "Refreshing..."
@@ -1379,30 +1447,51 @@ export function TeacherDashboard() {
                                 </div>
                               </CardHeader>
                               <CardContent className="p-0">
-                                {quizzesByContract[quizContractAddress]?.length > 0 ? (
+                                {quizzesByContract[quizContractAddress]
+                                  ?.length > 0 ? (
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                                     {quizzesByContract[quizContractAddress].map(
                                       (quiz) => (
                                         <div
                                           key={quiz.id}
-                                          className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+                                          className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-700 shadow-md hover:shadow-indigo-500/5 transition-shadow overflow-hidden"
                                         >
                                           <div className="p-4">
                                             <div className="flex items-start justify-between">
                                               <div>
-                                                <h4 className="font-medium text-gray-900">{quiz.title}</h4>
-                                                <p className="text-sm text-gray-600 mt-1">{quiz.description}</p>
+                                                <h4 className="font-medium text-indigo-300">
+                                                  {quiz.title}
+                                                </h4>
+                                                <p className="text-sm text-gray-400 mt-1">
+                                                  {quiz.description}
+                                                </p>
                                               </div>
-                                              <Badge className={quiz.isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
-                                                {quiz.isActive ? "Active" : "Inactive"}
+                                              <Badge
+                                                className={
+                                                  quiz.isActive
+                                                    ? "bg-green-900/50 text-green-300"
+                                                    : "bg-gray-700/50 text-gray-300"
+                                                }
+                                              >
+                                                {quiz.isActive
+                                                  ? "Active"
+                                                  : "Inactive"}
                                               </Badge>
                                             </div>
                                             <div className="grid grid-cols-3 gap-1 mt-3 text-xs text-gray-500">
                                               <div className="flex items-center">
-                                                <span className="font-medium mr-1">Questions:</span> {quiz.questionCount}
+                                                <span className="font-medium mr-1">
+                                                  Questions:
+                                                </span>{" "}
+                                                {quiz.questionCount}
                                               </div>
                                               <div className="col-span-2 flex items-center">
-                                                <span className="font-medium mr-1">Expires:</span> {new Date(quiz.expiresAt * 1000).toLocaleString()}
+                                                <span className="font-medium mr-1">
+                                                  Expires:
+                                                </span>{" "}
+                                                {new Date(
+                                                  quiz.expiresAt * 1000
+                                                ).toLocaleString()}
                                               </div>
                                             </div>
                                             <div className="flex flex-col sm:flex-row gap-2 mt-4">
@@ -1417,7 +1506,7 @@ export function TeacherDashboard() {
                                                     quiz.title
                                                   )
                                                 }
-                                                className="flex-1 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                                                className="flex-1 border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
                                               >
                                                 View Results
                                               </Button>
@@ -1431,7 +1520,7 @@ export function TeacherDashboard() {
                                                       quizContractAddress
                                                     )
                                                   }
-                                                  className="flex-1 border-red-200 text-red-700 hover:bg-red-50"
+                                                  className="flex-1 border-red-700 bg-red-900/30 text-red-300 hover:bg-red-800/50"
                                                 >
                                                   Deactivate
                                                 </Button>
@@ -1443,23 +1532,15 @@ export function TeacherDashboard() {
                                     )}
                                   </div>
                                 ) : (
-                                  <div className="text-center p-8 text-gray-500">
-                                    <FilePieChart className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                                    <p>No quizzes available for this contract.</p>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        openCreateQuizForm(
-                                          quizContractAddress,
-                                          classItem.classAddress
-                                        )
-                                      }
-                                      className="mt-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
-                                    >
-                                      <PlusCircle className="h-3 w-3 mr-1" />{" "}
-                                      Create Your First Quiz
-                                    </Button>
+                                  <div className="text-center p-8 bg-gray-800/50 backdrop-blur-sm rounded-lg border border-dashed border-gray-700 text-gray-400">
+                                    <FilePieChart className="h-8 w-8 mx-auto text-gray-500 mb-2" />
+                                    <p className="text-gray-300 font-medium">
+                                      No quiz contracts linked to this class
+                                      yet.
+                                    </p>
+                                    <p className="text-sm text-gray-400 mt-1">
+                                      Enable the quiz module to create quizzes.
+                                    </p>
                                   </div>
                                 )}
                               </CardContent>
@@ -1467,10 +1548,14 @@ export function TeacherDashboard() {
                           )
                         )
                       ) : (
-                        <div className="text-center p-8 bg-gray-50 rounded-lg border border-dashed border-gray-200 text-gray-500">
-                          <FilePieChart className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                          <p>No quiz contracts linked to this class yet.</p>
-                          <p className="text-sm mt-1">Enable the quiz module to create quizzes.</p>
+                        <div className="text-center p-8 bg-gray-800/50 backdrop-blur-sm rounded-lg border border-dashed border-gray-700 text-gray-400">
+                          <FilePieChart className="h-8 w-8 mx-auto text-gray-500 mb-2" />
+                          <p className="text-gray-300 font-medium">
+                            No quiz contracts linked to this class yet.
+                          </p>
+                          <p className="text-sm text-gray-400 mt-1">
+                            Enable the quiz module to create quizzes.
+                          </p>
                         </div>
                       )}
                     </div>

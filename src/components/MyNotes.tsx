@@ -148,10 +148,10 @@ export function MyNotes({ notesContractAddress }: MyNotesProps) {
   const renderCreatedNotes = () => {
     if (createdNotes.length === 0) {
       return (
-        <div className="text-center py-12">
-          <FileText className="h-12 w-12 mx-auto text-gray-400" />
-          <h3 className="mt-4 text-lg font-medium">No notes created</h3>
-          <p className="mt-2 text-sm text-gray-500">
+        <div className="text-center py-12 bg-gray-900/50 backdrop-blur-sm rounded-lg border border-dashed border-gray-700">
+          <FileText className="h-12 w-12 mx-auto text-gray-500 mb-2" />
+          <h3 className="mt-4 text-lg font-medium text-indigo-300">No notes created</h3>
+          <p className="mt-2 text-sm text-gray-400">
             You haven't created any notes yet.
           </p>
         </div>
@@ -161,22 +161,24 @@ export function MyNotes({ notesContractAddress }: MyNotesProps) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {createdNotes.map((note) => (
-          <Card key={note.id} className="overflow-hidden">
-            <CardHeader className="pb-2">
+          <Card key={note.id} className="overflow-hidden bg-gray-900/70 backdrop-blur-sm border border-gray-700 shadow-md hover:shadow-indigo-500/5 transition-shadow">
+            <CardHeader className="pb-2 bg-gray-800/50 border-b border-gray-700">
               <div className="flex justify-between items-start">
-                <CardTitle className="text-lg">{note.title}</CardTitle>
-                <Badge variant={note.isApproved ? "default" : "secondary"}>
+                <CardTitle className="text-lg text-indigo-300">{note.title}</CardTitle>
+                <Badge variant={note.isApproved ? "default" : "secondary"} className={note.isApproved 
+                  ? "bg-green-900/50 text-green-300 border border-green-700/50" 
+                  : "bg-amber-900/50 text-amber-300 border border-amber-600/50"}>
                   {note.isApproved ? "Approved" : "Pending"}
                 </Badge>
               </div>
-              <CardDescription>{note.description}</CardDescription>
+              <CardDescription className="text-gray-400">{note.description}</CardDescription>
             </CardHeader>
             
-            <CardContent className="pb-2">
+            <CardContent className="pb-2 pt-4">
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center text-muted-foreground">
-                    <Tag className="h-4 w-4 mr-1" />
+                  <div className="flex items-center text-gray-400">
+                    <Tag className="h-4 w-4 mr-1 text-indigo-400" />
                     <span>Price:</span>
                   </div>
                   
@@ -188,24 +190,26 @@ export function MyNotes({ notesContractAddress }: MyNotesProps) {
                         step="0.001"
                         value={newPrices[note.id]} 
                         onChange={(e) => handlePriceChange(note.id, e.target.value)}
-                        className="w-20 h-8 text-sm"
+                        className="w-20 h-8 text-sm bg-gray-800 border-gray-700 text-white"
                       />
                       <Button 
                         variant="ghost" 
                         size="sm"
                         onClick={() => handleSavePrice(note.id)}
                         disabled={saving[note.id]}
+                        className="text-indigo-300 hover:text-indigo-200 hover:bg-gray-800"
                       >
                         {saving[note.id] ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
                       </Button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <span>{note.price} EDU</span>
+                      <span className="text-indigo-300">{note.price} EDU</span>
                       <Button 
                         variant="ghost" 
                         size="sm"
                         onClick={() => handleEditPrice(note.id)}
+                        className="text-indigo-300 hover:text-indigo-200 hover:bg-gray-800"
                       >
                         <Edit className="h-3 w-3" />
                       </Button>
@@ -213,26 +217,26 @@ export function MyNotes({ notesContractAddress }: MyNotesProps) {
                   )}
                 </div>
                 
-                <div className="flex items-center text-muted-foreground">
-                  <Calendar className="h-4 w-4 mr-1" />
+                <div className="flex items-center text-gray-400">
+                  <Calendar className="h-4 w-4 mr-1 text-indigo-400" />
                   <span>Created: {formatDate(note.createdAt)}</span>
                 </div>
                 
-                <div className="flex items-center text-muted-foreground">
-                  <BookOpen className="h-4 w-4 mr-1" />
+                <div className="flex items-center text-gray-400">
+                  <BookOpen className="h-4 w-4 mr-1 text-indigo-400" />
                   <span>Lecture ID: {note.lectureId}</span>
                 </div>
                 
-                <div className="flex items-center text-muted-foreground">
-                  <Tag className="h-4 w-4 mr-1" />
+                <div className="flex items-center text-gray-400">
+                  <Tag className="h-4 w-4 mr-1 text-indigo-400" />
                   <span>Sales: {note.salesCount}</span>
                 </div>
               </div>
             </CardContent>
             
-            <CardFooter>
+            <CardFooter className="pt-4 border-t border-gray-700/50">
               <Button 
-                className="w-full" 
+                className="w-full border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50" 
                 variant="outline"
                 onClick={() => handleViewNote(note)}
               >
@@ -248,10 +252,10 @@ export function MyNotes({ notesContractAddress }: MyNotesProps) {
   const renderPurchasedNotes = () => {
     if (purchasedNotes.length === 0) {
       return (
-        <div className="text-center py-12">
-          <FileText className="h-12 w-12 mx-auto text-gray-400" />
-          <h3 className="mt-4 text-lg font-medium">No purchased notes</h3>
-          <p className="mt-2 text-sm text-gray-500">
+        <div className="text-center py-12 bg-gray-900/50 backdrop-blur-sm rounded-lg border border-dashed border-gray-700">
+          <FileText className="h-12 w-12 mx-auto text-gray-500 mb-2" />
+          <h3 className="mt-4 text-lg font-medium text-indigo-300">No purchased notes</h3>
+          <p className="mt-2 text-sm text-gray-400">
             You haven't purchased any notes yet.
           </p>
         </div>
@@ -261,42 +265,42 @@ export function MyNotes({ notesContractAddress }: MyNotesProps) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {purchasedNotes.map((note) => (
-          <Card key={note.id} className="overflow-hidden">
-            <CardHeader className="pb-2">
+          <Card key={note.id} className="overflow-hidden bg-gray-900/70 backdrop-blur-sm border border-gray-700 shadow-md hover:shadow-indigo-500/5 transition-shadow">
+            <CardHeader className="pb-2 bg-gray-800/50 border-b border-gray-700">
               <div className="flex justify-between items-start">
-                <CardTitle className="text-lg">{note.title}</CardTitle>
-                <Badge>Purchased</Badge>
+                <CardTitle className="text-lg text-indigo-300">{note.title}</CardTitle>
+                <Badge className="bg-purple-900/50 text-purple-300 border border-purple-700/50">Purchased</Badge>
               </div>
-              <CardDescription>{note.description}</CardDescription>
+              <CardDescription className="text-gray-400">{note.description}</CardDescription>
             </CardHeader>
             
-            <CardContent className="pb-2">
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center text-muted-foreground">
-                  <User className="h-4 w-4 mr-1" />
+            <CardContent className="pb-2 pt-4">
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center text-gray-400">
+                  <User className="h-4 w-4 mr-1 text-indigo-400" />
                   <span>Creator: {note.creator.slice(0, 6)}...{note.creator.slice(-4)}</span>
                 </div>
                 
-                <div className="flex items-center text-muted-foreground">
-                  <Calendar className="h-4 w-4 mr-1" />
+                <div className="flex items-center text-gray-400">
+                  <Calendar className="h-4 w-4 mr-1 text-indigo-400" />
                   <span>Date: {formatDate(note.createdAt)}</span>
                 </div>
                 
-                <div className="flex items-center text-muted-foreground">
-                  <BookOpen className="h-4 w-4 mr-1" />
+                <div className="flex items-center text-gray-400">
+                  <BookOpen className="h-4 w-4 mr-1 text-indigo-400" />
                   <span>Lecture ID: {note.lectureId}</span>
                 </div>
                 
-                <div className="flex items-center text-muted-foreground">
-                  <Tag className="h-4 w-4 mr-1" />
+                <div className="flex items-center text-gray-400">
+                  <Tag className="h-4 w-4 mr-1 text-indigo-400" />
                   <span>Price: {note.price} EDU</span>
                 </div>
               </div>
             </CardContent>
             
-            <CardFooter>
+            <CardFooter className="pt-4 border-t border-gray-700/50">
               <Button 
-                className="w-full" 
+                className="w-full border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50" 
                 variant="outline"
                 onClick={() => handleViewNote(note)}
               >
@@ -311,8 +315,8 @@ export function MyNotes({ notesContractAddress }: MyNotesProps) {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex justify-center items-center py-12 text-gray-300">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
         <span className="ml-2">Loading your notes...</span>
       </div>
     );
@@ -321,18 +325,18 @@ export function MyNotes({ notesContractAddress }: MyNotesProps) {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="created">Created Notes</TabsTrigger>
-          <TabsTrigger value="purchased">Purchased Notes</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 bg-gray-800/70 border border-gray-700">
+          <TabsTrigger value="created" className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300">Created Notes</TabsTrigger>
+          <TabsTrigger value="purchased" className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300">Purchased Notes</TabsTrigger>
         </TabsList>
         
         <TabsContent value="created" className="mt-6">
-          <h2 className="text-xl font-semibold mb-4">Notes You've Created</h2>
+          <h2 className="text-xl font-semibold mb-4 text-indigo-300">Notes You've Created</h2>
           {renderCreatedNotes()}
         </TabsContent>
         
         <TabsContent value="purchased" className="mt-6">
-          <h2 className="text-xl font-semibold mb-4">Notes You've Purchased</h2>
+          <h2 className="text-xl font-semibold mb-4 text-indigo-300">Notes You've Purchased</h2>
           {renderPurchasedNotes()}
         </TabsContent>
       </Tabs>
@@ -340,4 +344,4 @@ export function MyNotes({ notesContractAddress }: MyNotesProps) {
   );
 }
 
-export default MyNotes; 
+export default MyNotes;

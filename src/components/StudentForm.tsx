@@ -37,7 +37,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ onSubmit, isAddingStudent }) 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-indigo-300">
           Student Wallet Address:
         </label>
         <input
@@ -48,11 +48,11 @@ const StudentForm: React.FC<StudentFormProps> = ({ onSubmit, isAddingStudent }) 
           placeholder="Enter student's wallet address"
           required
           disabled={isLoading}
-          className="mt-1 block w-full border p-2 rounded-md disabled:bg-gray-100"
+          className="mt-1 block w-full bg-gray-800 border border-gray-700 p-2 rounded-md text-gray-200 placeholder:text-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:bg-gray-800/50 disabled:text-gray-500"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-indigo-300">
           Student Name:
         </label>
         <input
@@ -63,11 +63,11 @@ const StudentForm: React.FC<StudentFormProps> = ({ onSubmit, isAddingStudent }) 
           placeholder="Enter student's name"
           required
           disabled={isLoading}
-          className="mt-1 block w-full border p-2 rounded-md disabled:bg-gray-100"
+          className="mt-1 block w-full bg-gray-800 border border-gray-700 p-2 rounded-md text-gray-200 placeholder:text-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:bg-gray-800/50 disabled:text-gray-500"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-indigo-300">
           Additional Details:
         </label>
         <input
@@ -77,7 +77,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ onSubmit, isAddingStudent }) 
           onChange={handleInputChange}
           placeholder="Optional additional information"
           disabled={isLoading}
-          className="mt-1 block w-full border p-2 rounded-md disabled:bg-gray-100"
+          className="mt-1 block w-full bg-gray-800 border border-gray-700 p-2 rounded-md text-gray-200 placeholder:text-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:bg-gray-800/50 disabled:text-gray-500"
         />
       </div>
       <Button
@@ -85,8 +85,8 @@ const StudentForm: React.FC<StudentFormProps> = ({ onSubmit, isAddingStudent }) 
         disabled={isLoading || !formData.address || !formData.name}
         className={`w-full transition-colors duration-200 flex items-center justify-center space-x-2 ${
           isLoading || !formData.address || !formData.name
-            ? 'bg-gray-400'
-            : 'bg-blue-600 hover:bg-blue-700'
+            ? 'bg-gray-700 text-gray-400'
+            : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white'
         }`}
       >
         {isLoading ? (
@@ -102,4 +102,4 @@ const StudentForm: React.FC<StudentFormProps> = ({ onSubmit, isAddingStudent }) 
   );
 };
 
-export default StudentForm; 
+export default StudentForm;

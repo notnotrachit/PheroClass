@@ -44,7 +44,7 @@ export function DashboardRouter() {
       <Button
         onClick={() => setUserRole(null)}
         variant="outline"
-        className="fixed bottom-4 right-4 bg-white/90 hover:bg-white text-indigo-600 border-indigo-400 hover:border-indigo-600 transition-all duration-300 shadow-md hover:shadow-lg z-50"
+        className="fixed bottom-4 right-4 bg-gray-900/80 backdrop-blur-sm hover:bg-gray-800 text-indigo-300 border-indigo-700 hover:border-indigo-600 transition-all duration-300 shadow-md hover:shadow-indigo-500/20 z-50"
       >
         Switch Role
       </Button>
@@ -54,25 +54,27 @@ export function DashboardRouter() {
 
 const HomePage = ({ connectWallet, scrolled }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-indigo-700 text-white overflow-hidden">
+    <div className="min-h-screen bg-gray-950 text-white overflow-hidden">
       {/* Header */}
       <header
         className={`fixed top-0 w-full z-50 transition-all duration-300 ${
           scrolled
-            ? "bg-indigo-900/90 backdrop-blur-md py-2 shadow-lg"
+            ? "bg-gray-900/90 backdrop-blur-md py-2 shadow-lg"
             : "bg-transparent py-4"
         }`}
       >
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="bg-white/20 rounded-lg p-2">
-              <BrainCircuit className="text-white" size={24} />
+            <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-2 shadow-inner">
+              <BrainCircuit className="text-indigo-400" size={24} />
             </div>
-            <h1 className="font-bold text-2xl">PheroClass</h1>
+            <h1 className="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+              PheroClass
+            </h1>
           </div>
           <Button
             onClick={connectWallet}
-            className="bg-white text-indigo-700 hover:bg-indigo-100 transition-colors duration-300 rounded-full shadow-lg hover:shadow-xl"
+            className="bg-gray-800 border border-gray-700 text-indigo-400 hover:bg-gray-800/80 transition-colors duration-300 rounded-lg shadow-md hover:shadow-indigo-500/10"
           >
             Connect Wallet
           </Button>
@@ -83,41 +85,45 @@ const HomePage = ({ connectWallet, scrolled }) => {
       <section className="pt-32 pb-16 px-4 container mx-auto">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div className="space-y-6">
-            <div className="inline-block bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-sm font-medium">
+            <div className="inline-block bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 px-4 py-2 rounded-full text-sm font-medium shadow-lg">
               Empowering Education 🚀
             </div>
             <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">
               Smart Education <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-blue-400">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">
                 Powered by Blockchain
               </span>
             </h1>
-            <p className="text-xl text-white/80">
+            <p className="text-xl text-gray-400">
               Transforming classrooms with AI-driven quizzes, secure attendance
               tracking, and collaborative note sharing.
             </p>
             <div className="flex gap-4 pt-4">
               <Button
                 onClick={connectWallet}
-                className="bg-white text-indigo-700 hover:bg-indigo-100 transition-colors duration-300 text-lg py-3 px-6 rounded-full shadow-lg hover:shadow-xl font-medium"
+                className="group relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white transition-all duration-300 text-lg py-3 px-6 rounded-lg shadow-lg hover:shadow-indigo-500/20 overflow-hidden"
               >
-                Get Started <ChevronRight className="ml-2" size={18} />
+                <span className="relative z-10">
+                  Get Started{" "}
+                  <ChevronRight className="inline-block ml-2" size={18} />
+                </span>
+                <span className="absolute inset-0 bg-gradient-to-r from-indigo-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               </Button>
               <Button
                 variant="outline"
-                className="text-black border-white/30 hover:bg-white/10 transition-colors duration-300 text-lg py-3 px-6 rounded-full"
+                className="text-white border-gray-700 hover:bg-gray-800/50 transition-colors duration-300 text-lg py-3 px-6 rounded-lg"
               >
                 Learn More
               </Button>
             </div>
           </div>
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl rotate-3 scale-105 opacity-30 blur-lg"></div>
-            <div className="bg-white/10 backdrop-blur-md p-4 rounded-lg shadow-lg border border-white/20 z-20">
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/30 to-purple-600/30 rounded-xl rotate-3 scale-105 opacity-30 blur-lg"></div>
+            <div className="bg-gray-800/30 backdrop-blur-md p-4 rounded-lg shadow-lg border border-gray-700/50 z-20 relative">
               <img
                 src="https://www.educatorstechnology.com/wp-content/webp-express/webp-images/uploads/2024/05/top-educational-ai-tools-1024x535.png.webp"
                 alt="Smart Classroom"
-                className="rounded-md shadow-2xl relative z-10 border border-gray-800"
+                className="rounded-md shadow-2xl relative z-10 border border-gray-700"
               />
             </div>
           </div>
@@ -371,33 +377,43 @@ const StatCard = ({ number, label, icon }) => {
 
 const RoleSelector = ({ address, setUserRole }) => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-indigo-700 text-white">
-      <div className="bg-white/10 backdrop-blur-md p-8 rounded-xl border border-white/20 shadow-xl max-w-md w-full">
+    <div className="relative flex flex-col items-center justify-center min-h-screen bg-gray-950 text-white overflow-hidden">
+      {/* Gradient background blobs */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
+        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-indigo-900/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
+        <div className="absolute top-3/4 -right-32 w-96 h-96 bg-purple-900/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-32 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-blue-900/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
+      </div>
+      
+      {/* Dotted pattern background */}
+      <div className="absolute inset-0 bg-grid-small-white/[0.2] -z-10"></div>
+      
+      <div className="bg-gray-900/70 backdrop-blur-md p-8 rounded-xl border border-gray-700/50 shadow-xl max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="bg-white/10 rounded-full p-4 inline-flex mb-4">
-            <BrainCircuit className="text-white" size={32} />
+          <div className="bg-indigo-900/50 rounded-full p-4 inline-flex mb-4">
+            <BrainCircuit className="text-indigo-300" size={32} />
           </div>
-          <h2 className="text-3xl font-bold mb-2">Welcome to PheroClass</h2>
-          <p className="text-white/70">Please select your role to continue</p>
-          <div className="mt-4 py-2 px-4 bg-white/10 rounded-full text-sm inline-block">
+          <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text">Welcome to PheroClass</h2>
+          <p className="text-gray-400">Please select your role to continue</p>
+          <div className="mt-4 py-2 px-4 bg-gray-800/70 rounded-full text-sm inline-block text-gray-300 border border-gray-700/50">
             Wallet: {address.slice(0, 6)}...{address.slice(-4)}
           </div>
         </div>
         <div className="space-y-4">
           <button
             onClick={() => setUserRole("teacher")}
-            className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white transition-all duration-300 py-4 rounded-xl shadow-md hover:shadow-lg flex items-center justify-center gap-3 group"
+            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white transition-all duration-300 py-4 rounded-xl shadow-md hover:shadow-indigo-500/20 flex items-center justify-center gap-3 group"
           >
-            <div className="bg-white/20 rounded-full p-2 group-hover:bg-white/30 transition-colors">
+            <div className="bg-white/10 rounded-full p-2 group-hover:bg-white/20 transition-colors">
               <GraduationCap size={24} />
             </div>
             <span className="font-medium text-lg">I'm a Teacher</span>
           </button>
           <button
             onClick={() => setUserRole("student")}
-            className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white transition-all duration-300 py-4 rounded-xl shadow-md hover:shadow-lg flex items-center justify-center gap-3 group"
+            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white transition-all duration-300 py-4 rounded-xl shadow-md hover:shadow-indigo-500/20 flex items-center justify-center gap-3 group"
           >
-            <div className="bg-white/20 rounded-full p-2 group-hover:bg-white/30 transition-colors">
+            <div className="bg-white/10 rounded-full p-2 group-hover:bg-white/20 transition-colors">
               <BookOpen size={24} />
             </div>
             <span className="font-medium text-lg">I'm a Student</span>
