@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -39,6 +39,7 @@ import NotesMarketplace from "../components/NotesMarketplace";
 import MyNotes from "../components/MyNotes";
 import QRScanner from "../components/QRScanner";
 import { LoaderCircle } from "lucide-react";
+import useSwipeTransition from "@/hooks/useSwipeTransition";
 
 interface Class {
   classAddress: string;
@@ -146,8 +147,29 @@ export function StudentDashboard() {
   const [notesContractsByClass, setNotesContractsByClass] =
     useState<NotesContractsByClass>({});
   const [activeTab, setActiveTab] = useState("attendance");
+  const [contentRef, setContentRef] = useState<HTMLElement | null>(null);
 
   const { provider, address } = useWalletContext();
+
+  // Tab order for swipe navigation
+  const tabOrder = ["attendance", "quizzes", "notes"];
+
+  // Use our new swipe transition hook
+  const { containerRef, registerContentRef, transition } = useSwipeTransition({
+    activeTab,
+    tabOrder,
+    onChangeTab: setActiveTab,
+    threshold: 50,
+  });
+
+  // Apply transition style when changing tabs
+  const getTabContentStyle = (tab: string) => {
+    return {
+      transition: transition
+        ? "transform 0.3s ease-out, opacity 0.3s ease-out"
+        : "none",
+    };
+  };
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -536,9 +558,7 @@ export function StudentDashboard() {
           }
           onSuccess={() => {
             setIsPopupOpen(false);
-            setConfirmationMessage(
-              "Notes uploaded successfully! They will be reviewed by the instructor."
-            );
+            setConfirmationMessage("Notes uploaded successfully!");
           }}
         />
       ),
@@ -627,9 +647,7 @@ export function StudentDashboard() {
                   notesContractsByClass[selectedClass.classAddress]
                 }
                 onSuccess={() => {
-                  setConfirmationMessage(
-                    "Notes uploaded successfully! They will be reviewed by the instructor."
-                  );
+                  setConfirmationMessage("Notes uploaded successfully!");
                 }}
               />
             </CardContent>
@@ -812,34 +830,210 @@ export function StudentDashboard() {
 
   // Render
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div className="mb-4 md:mb-0">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text">
+    <div className="flex h-screen bg-gray-950">
+      {/* Sidebar - Class Navigation */}
+      <div className="w-72 h-screen bg-gray-900 border-r border-gray-800 overflow-y-auto hidden md:block">
+        <div className="p-4 border-b border-gray-800">
+          <h2 className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text">
             Student Dashboard
-          </h1>
-          <p className="text-gray-400 mt-1">
-            View your classes, attendance, and quizzes
-          </p>
+          </h2>
+          <p className="text-xs text-gray-500 mt-1">Welcome, student</p>
         </div>
-        <Button
-          onClick={openQRScanner}
-          className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
-        >
-          <QrCode className="h-4 w-4 mr-2" />
-          Scan Attendance QR
-        </Button>
+
+        <div className="p-4">
+          <Button
+            onClick={openQRScanner}
+            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+          >
+            <QrCode className="h-4 w-4 mr-2" />
+            Scan Attendance QR
+          </Button>
+        </div>
+
+        <div className="mt-2">
+          <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase">
+            My Classes
+          </div>
+          {isLoadingInitialData ? (
+            <div className="flex items-center justify-center py-8">
+              <LoaderCircle className="h-5 w-5 text-indigo-400 animate-spin" />
+            </div>
+          ) : classes.length === 0 ? (
+            <div className="px-4 py-2 text-sm text-gray-500">
+              Not enrolled in any classes
+            </div>
+          ) : (
+            <div className="space-y-1 px-2">
+              {classes.map((classItem) => (
+                <Button
+                  key={classItem.classAddress}
+                  variant="ghost"
+                  onClick={() => setSelectedClass(classItem)}
+                  className={`w-full justify-start text-sm px-3 py-2 ${
+                    selectedClass?.classAddress === classItem.classAddress
+                      ? "bg-indigo-900/50 text-indigo-300 hover:bg-indigo-800/50"
+                      : "text-gray-400 hover:bg-gray-800/50 hover:text-gray-300"
+                  }`}
+                >
+                  <BookOpen
+                    className={`h-4 w-4 mr-2 ${
+                      selectedClass?.classAddress === classItem.classAddress
+                        ? "text-indigo-400"
+                        : "text-gray-500"
+                    }`}
+                  />
+                  <div className="truncate">{classItem.name}</div>
+                </Button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      {isLoadingInitialData ? (
-        <div className="flex flex-col items-center justify-center h-64 bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800">
-          <LoaderCircle className="h-8 w-8 text-indigo-400 animate-spin mb-2" />
-          <p className="text-gray-400">Loading classes...</p>
+      {/* Mobile header and class selector - only visible on small screens */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-10 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 shadow-lg">
+        {/* Top header with logo and scan button */}
+        <div className="flex items-center justify-between p-3 border-b border-gray-800/50">
+          <h2 className="text-lg font-bold bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text">
+            Student Dashboard
+          </h2>
+          <Button
+            onClick={openQRScanner}
+            size="sm"
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+          >
+            <QrCode className="h-4 w-4 mr-1" /> Scan
+          </Button>
         </div>
-      ) : (
-        <>
+        {/* Class selection cards */}
+        <div className="px-3 py-2">
+          {isLoadingInitialData ? (
+            <div className="flex items-center justify-center h-10">
+              <LoaderCircle className="h-5 w-5 text-indigo-400 animate-spin" />
+            </div>
+          ) : classes.length === 0 ? (
+            <div className="text-sm text-gray-500 p-2 bg-gray-800/70 rounded-md">
+              Not enrolled in any classes
+            </div>
+          ) : (
+            <div className="relative">
+              <div className="flex overflow-x-auto pb-2 scrollbar-hide gap-3 snap-x">
+                {classes.map((classItem) => (
+                  <div
+                    key={classItem.classAddress}
+                    onClick={() => setSelectedClass(classItem)}
+                    className={`flex-shrink-0 min-w-[160px] max-w-[160px] snap-start rounded-lg shadow-md transition-transform ${
+                      selectedClass?.classAddress === classItem.classAddress
+                        ? "border-2 border-indigo-500 transform scale-[1.02]"
+                        : "border border-gray-700"
+                    }`}
+                  >
+                    <div
+                      className={`p-3 rounded-lg h-full flex flex-col ${
+                        selectedClass?.classAddress === classItem.classAddress
+                          ? "bg-gradient-to-br from-indigo-900/70 to-purple-900/70"
+                          : "bg-gray-800/70"
+                      }`}
+                    >
+                      <div className="mb-1">
+                        <BookOpen
+                          className={`h-5 w-5 ${
+                            selectedClass?.classAddress ===
+                            classItem.classAddress
+                              ? "text-indigo-300"
+                              : "text-gray-400"
+                          }`}
+                        />
+                      </div>
+                      <h3
+                        className={`font-medium text-sm line-clamp-2 ${
+                          selectedClass?.classAddress === classItem.classAddress
+                            ? "text-white"
+                            : "text-gray-300"
+                        }`}
+                      >
+                        {classItem.name}
+                      </h3>
+                      <div
+                        className={`mt-1 text-xs truncate ${
+                          selectedClass?.classAddress === classItem.classAddress
+                            ? "text-indigo-300/80"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        {classItem.symbol}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="absolute left-0 right-0 bottom-1 flex justify-center pointer-events-none">
+                <div className="flex gap-1">
+                  {classes.map((classItem, index) => (
+                    <div
+                      key={classItem.classAddress}
+                      className={`h-1 rounded-full transition-all duration-200 ${
+                        selectedClass?.classAddress === classItem.classAddress
+                          ? "w-4 bg-indigo-500"
+                          : "w-1 bg-gray-600"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        {/* Active tab indicators */}
+        {selectedClass && (
+          <div className="flex text-xs text-center border-t border-gray-800/50">
+            <button
+              onClick={() => setActiveTab("attendance")}
+              className={`flex-1 py-2 flex flex-col items-center ${
+                activeTab === "attendance"
+                  ? "text-indigo-300 border-b-2 border-indigo-500"
+                  : "text-gray-400"
+              }`}
+            >
+              <BookOpen className="h-4 w-4 mb-1" />
+              Attendance
+            </button>
+            <button
+              onClick={() => setActiveTab("quizzes")}
+              className={`flex-1 py-2 flex flex-col items-center ${
+                activeTab === "quizzes"
+                  ? "text-indigo-300 border-b-2 border-indigo-500"
+                  : "text-gray-400"
+              }`}
+            >
+              <FilePieChart className="h-4 w-4 mb-1" />
+              Quizzes
+            </button>
+            <button
+              onClick={() => setActiveTab("notes")}
+              className={`flex-1 py-2 flex flex-col items-center ${
+                activeTab === "notes"
+                  ? "text-indigo-300 border-b-2 border-indigo-500"
+                  : "text-gray-400"
+              }`}
+            >
+              <FileText className="h-4 w-4 mb-1" />
+              Notes
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Main Content Area */}
+      <div
+        className="flex-1 overflow-y-auto md:pt-0 pt-24 pb-6"
+        ref={containerRef}
+      >
+        <div className="container mx-auto px-4 py-6 max-w-4xl">
+          {/* Confirmation Messages */}
           {confirmationMessage && (
-            <div className="bg-indigo-900/30 border-l-4 border-indigo-500 p-4 mb-6 rounded-md shadow-md backdrop-blur-sm">
+            <div className="bg-indigo-900/30 border-l-4 border-indigo-500 p-4 mb-6 rounded-md backdrop-blur-sm">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <CheckCircle className="h-5 w-5 text-indigo-400" />
@@ -853,223 +1047,218 @@ export function StudentDashboard() {
             </div>
           )}
 
-          {classes.length > 0 ? (
-            <>
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold text-indigo-300 mb-4">
-                  My Classes
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {classes.map((classItem) => (
-                    <div
-                      key={classItem.classAddress}
-                      onClick={() => setSelectedClass(classItem)}
-                      className={`bg-gray-900/70 backdrop-blur-md rounded-lg border transition-all duration-200 overflow-hidden ${
-                        selectedClass?.classAddress === classItem.classAddress
-                          ? "border-indigo-500 ring-2 ring-indigo-500/20 shadow-lg shadow-indigo-500/10"
-                          : "border-gray-800 hover:border-indigo-400/50 hover:shadow-md hover:shadow-indigo-500/5"
-                      } cursor-pointer`}
-                    >
-                      <div
-                        className={`h-1.5 w-full ${
-                          selectedClass?.classAddress === classItem.classAddress
-                            ? "bg-gradient-to-r from-indigo-500 to-purple-500"
-                            : "bg-gray-800"
-                        }`}
-                      ></div>
-                      <div className="p-4">
-                        <h3 className="font-medium text-lg text-white">
-                          {classItem.name}
-                        </h3>
-                        <div className="flex items-center mt-1">
-                          <span className="text-xs bg-gray-800 rounded px-2 py-1 text-gray-300">
-                            {classItem.symbol}
-                          </span>
-                        </div>
-                        <div className="mt-3 text-sm text-gray-400 truncate font-mono">
-                          {classItem.classAddress.slice(0, 10)}...
-                          {classItem.classAddress.slice(-8)}
-                        </div>
-                        {selectedClass?.classAddress ===
-                          classItem.classAddress && (
-                          <div className="mt-3 text-xs text-indigo-400 font-medium">
-                            Currently Selected
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {selectedClass ? (
-                <Tabs
-                  value={activeTab}
-                  onValueChange={setActiveTab}
-                  className="bg-gray-900/70 backdrop-blur-md rounded-lg shadow-lg border border-gray-800 overflow-hidden"
-                >
-                  <TabsList className="w-full rounded-none justify-start px-6 pt-4 bg-gray-800/70 border-b border-gray-700">
-                    <TabsTrigger
-                      value="attendance"
-                      className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
-                    >
-                      <BookOpen className="mr-2 h-4 w-4" />
-                      Attendance
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="quizzes"
-                      className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
-                    >
-                      <FilePieChart className="mr-2 h-4 w-4" />
-                      Quizzes
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="notes"
-                      className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
-                    >
-                      <FileText className="mr-2 h-4 w-4" />
-                      Notes
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="attendance" className="p-6">
-                    <div className="space-y-6">
-                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <h2 className="text-xl font-semibold text-indigo-300">
-                          Attendance Records
-                        </h2>
-                        <Button
-                          onClick={openQRScanner}
-                          className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
-                        >
-                          <QrCode className="mr-2 h-4 w-4" />
-                          Scan QR Code
-                        </Button>
-                      </div>
-
-                      {isFetchingLectures[selectedClass.classAddress] ? (
-                        <div className="flex items-center justify-center h-40">
-                          <LoaderCircle className="h-6 w-6 text-indigo-400 animate-spin mr-2" />
-                          <span className="text-gray-400">
-                            Loading lectures...
-                          </span>
-                        </div>
-                      ) : lecturesByClass[selectedClass.classAddress]?.length >
-                        0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {lecturesByClass[selectedClass.classAddress].map(
-                            (lecture) => (
-                              <div
-                                key={lecture.id}
-                                className="bg-gray-800/70 backdrop-blur-sm rounded-lg border border-gray-700 shadow-md hover:shadow-indigo-500/5 transition-shadow overflow-hidden"
-                              >
-                                <div className="p-4">
-                                  <h3 className="font-medium text-lg text-white mb-2">
-                                    {lecture.topic}
-                                  </h3>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-sm text-gray-400">
-                                      Lecture ID: {lecture.id}
-                                    </span>
-                                    {attendanceByClass[
-                                      selectedClass.classAddress
-                                    ]?.[lecture.id - 1] ? (
-                                      <span className="px-3 py-1.5 bg-indigo-900/50 text-indigo-300 rounded-full text-xs font-medium border border-indigo-600/50">
-                                        Attended
-                                      </span>
-                                    ) : (
-                                      <span className="px-3 py-1.5 bg-red-900/30 text-red-300 rounded-full text-xs font-medium border border-red-600/30">
-                                        Not Attended
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            )
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-center p-8 bg-gray-800/50 backdrop-blur-sm rounded-lg border border-dashed border-gray-700">
-                          <BookOpen className="h-8 w-8 mx-auto text-gray-500 mb-2" />
-                          <p className="text-gray-300 font-medium">
-                            No lectures found for this class.
-                          </p>
-                          <p className="text-sm text-gray-400 mt-1">
-                            Lecture information will appear once your teacher
-                            creates them.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="quizzes" className="p-6">
-                    <div className="space-y-6">
-                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <h2 className="text-xl font-semibold text-indigo-300">
-                          Quizzes
-                        </h2>
-                        <Button
-                          variant="outline"
-                          onClick={() =>
-                            refreshQuizzes(selectedClass.classAddress)
-                          }
-                          className="border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
-                        >
-                          Refresh Quizzes
-                        </Button>
-                      </div>
-                      <div className="space-y-3">
-                        {quizContractsByClass[selectedClass.classAddress]
-                          ?.length === 0 ? (
-                          <div className="text-center p-8 bg-gray-800/50 backdrop-blur-sm rounded-lg border border-dashed border-gray-700">
-                            <FilePieChart className="h-8 w-8 mx-auto text-gray-500 mb-2" />
-                            <p className="text-gray-300 font-medium">
-                              No quizzes available
-                            </p>
-                            <p className="text-sm text-gray-400 mt-1">
-                              Quizzes will appear once your teacher creates
-                              them.
-                            </p>
-                          </div>
-                        ) : (
-                          renderQuizzes(selectedClass.classAddress)
-                        )}
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="notes" className="p-6">
-                    <div className="space-y-6">{renderNotesTabs()}</div>
-                  </TabsContent>
-                </Tabs>
-              ) : (
-                <div className="flex items-center justify-center h-64 bg-gray-900/50 backdrop-blur-sm rounded-lg border border-dashed border-gray-700">
-                  <div className="text-center p-8">
-                    <BookOpen className="h-10 w-10 mx-auto text-gray-600 mb-3" />
-                    <p className="text-gray-300 font-medium">
-                      Please Select a Class
-                    </p>
-                    <p className="text-sm text-gray-400 mt-2">
-                      Click on any class card above to view details.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </>
+          {isLoadingInitialData ? (
+            <div className="flex flex-col items-center justify-center h-64">
+              <LoaderCircle className="h-10 w-10 text-indigo-400 animate-spin mb-4" />
+              <p className="text-gray-400">Loading your dashboard...</p>
+            </div>
+          ) : classes.length === 0 ? (
+            <div className="bg-gray-900/50 backdrop-blur-sm border border-dashed border-gray-700 rounded-lg p-12 text-center">
+              <BookOpen className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+              <h3 className="text-xl font-medium text-gray-300 mb-2">
+                You are not enrolled in any classes
+              </h3>
+              <p className="text-gray-400 mb-6 max-w-md mx-auto">
+                Once a teacher enrolls you in a class, it will appear here.
+                You'll be able to mark attendance, take quizzes, and access
+                notes.
+              </p>
+            </div>
+          ) : !selectedClass ? (
+            <div className="text-center py-12">
+              <h3 className="text-lg font-medium text-gray-300 mb-2">
+                Select a class from the sidebar
+              </h3>
+              <p className="text-gray-500">
+                Choose one of your classes to view
+              </p>
+            </div>
           ) : (
-            <div className="flex items-center justify-center h-64 bg-gray-900/50 backdrop-blur-sm rounded-lg border border-dashed border-gray-700">
-              <div className="text-center p-8">
-                <BookOpen className="h-10 w-10 mx-auto text-gray-600 mb-3" />
-                <p className="text-gray-300 font-medium">No Classes Found</p>
-                <p className="text-sm text-gray-400 mt-2">
-                  You are not enrolled in any classes yet.
-                </p>
+            // Selected class content
+            <div className="space-y-6">
+              {/* Class Header */}
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
+                <div className="mb-4 sm:mb-0">
+                  <h1 className="text-2xl font-bold text-white">
+                    {selectedClass.name}
+                  </h1>
+                  <p className="text-sm text-gray-400 mt-1 font-mono">
+                    {selectedClass.classAddress.slice(0, 6)}...
+                    {selectedClass.classAddress.slice(-4)}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={openQRScanner}
+                  className="border-indigo-600/30 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
+                >
+                  <QrCode className="h-4 w-4 mr-2" /> Scan QR
+                </Button>
               </div>
+
+              {/* Class Tabs */}
+              <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="w-full"
+              >
+                <TabsList className="w-full grid grid-cols-3 bg-gray-800/80 border border-gray-700 rounded-lg mb-6">
+                  <TabsTrigger
+                    value="attendance"
+                    className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
+                  >
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Attendance
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="quizzes"
+                    className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
+                  >
+                    <FilePieChart className="h-4 w-4 mr-2" />
+                    Quizzes
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="notes"
+                    className="data-[state=active]:bg-indigo-900/50 data-[state=active]:text-indigo-300 text-gray-300"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Notes
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Attendance Tab */}
+                <TabsContent value="attendance" className="space-y-6">
+                  <div
+                    ref={(el) => registerContentRef("attendance", el)}
+                    style={getTabContentStyle("attendance")}
+                  >
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-medium text-white">
+                        Attendance Records
+                      </h3>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          fetchAttendance(selectedClass.classAddress)
+                        }
+                        className="border-gray-700 bg-gray-800/50 text-gray-300 hover:bg-gray-800 hover:text-gray-200"
+                      >
+                        Refresh Attendance
+                      </Button>
+                    </div>
+
+                    {isFetchingLectures[selectedClass.classAddress] ? (
+                      <div className="flex items-center justify-center h-40">
+                        <LoaderCircle className="h-6 w-6 text-indigo-400 animate-spin mr-2" />
+                        <span className="text-gray-400">
+                          Loading lectures...
+                        </span>
+                      </div>
+                    ) : lecturesByClass[selectedClass.classAddress]?.length >
+                      0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {lecturesByClass[selectedClass.classAddress].map(
+                          (lecture) => (
+                            <Card
+                              key={lecture.id}
+                              className="border-gray-800 bg-gray-900/70 backdrop-blur-sm shadow-md hover:shadow-indigo-500/5 transition-shadow"
+                            >
+                              <CardHeader className="pb-2">
+                                <CardTitle className="text-lg text-white">
+                                  {lecture.topic}
+                                </CardTitle>
+                                <CardDescription>
+                                  Lecture ID: {lecture.id}
+                                </CardDescription>
+                              </CardHeader>
+                              <CardContent className="pt-0">
+                                <div className="flex justify-end mt-2">
+                                  {attendanceByClass[
+                                    selectedClass.classAddress
+                                  ]?.[lecture.id - 1] ? (
+                                    <span className="px-3 py-1.5 bg-indigo-900/50 text-indigo-300 rounded-full text-xs font-medium border border-indigo-600/50">
+                                      Attended
+                                    </span>
+                                  ) : (
+                                    <span className="px-3 py-1.5 bg-red-900/30 text-red-300 rounded-full text-xs font-medium border border-red-600/30">
+                                      Not Attended
+                                    </span>
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          )
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 bg-gray-800/50 backdrop-blur-sm rounded-lg border border-dashed border-gray-700">
+                        <BookOpen className="h-8 w-8 mx-auto text-gray-600 mb-2" />
+                        <p className="text-gray-300 font-medium">
+                          No lectures available
+                        </p>
+                        <p className="text-sm text-gray-400 mt-1">
+                          Lectures will appear once your teacher creates them
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+
+                {/* Quizzes Tab */}
+                <TabsContent value="quizzes" className="space-y-6">
+                  <div
+                    ref={(el) => registerContentRef("quizzes", el)}
+                    style={getTabContentStyle("quizzes")}
+                  >
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-medium text-white">
+                        Available Quizzes
+                      </h3>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          refreshQuizzes(selectedClass.classAddress)
+                        }
+                        className="border-gray-700 bg-gray-800/50 text-gray-300 hover:bg-gray-800 hover:text-gray-200"
+                      >
+                        Refresh Quizzes
+                      </Button>
+                    </div>
+
+                    {quizContractsByClass[selectedClass.classAddress]
+                      ?.length === 0 ? (
+                      <div className="text-center py-8 bg-gray-800/50 backdrop-blur-sm rounded-lg border border-dashed border-gray-700">
+                        <FilePieChart className="h-8 w-8 mx-auto text-gray-600 mb-2" />
+                        <p className="text-gray-300 font-medium">
+                          No quizzes available
+                        </p>
+                        <p className="text-sm text-gray-400 mt-1">
+                          Quizzes will appear once your teacher creates them
+                        </p>
+                      </div>
+                    ) : (
+                      renderQuizzes(selectedClass.classAddress)
+                    )}
+                  </div>
+                </TabsContent>
+
+                {/* Notes Tab */}
+                <TabsContent value="notes" className="space-y-6">
+                  <div
+                    ref={(el) => registerContentRef("notes", el)}
+                    style={getTabContentStyle("notes")}
+                  >
+                    {renderNotesTabs()}
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
           )}
-        </>
-      )}
+        </div>
+      </div>
 
       {isPopupOpen && popupContent && (
         <Popup

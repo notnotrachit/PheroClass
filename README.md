@@ -55,8 +55,8 @@ PheroClass is a comprehensive decentralized education platform that leverages bl
 1. Clone the repository
 
 ```bash
-git clone https://github.com/notnotrachit/educlass.git
-cd educlass
+git clone https://github.com/notnotrachit/PheroClass.git
+cd PheroClass
 ```
 
 2. Install dependencies

@@ -10,7 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle, Trash2, Wand2 } from "lucide-react";
+import { useIsMobile } from "../hooks/use-mobile";
 
 interface CreateQuizFormProps {
   onSubmit: (formData: {
@@ -36,6 +37,7 @@ export default function CreateQuizForm({
   lectures,
   isCreatingQuiz,
 }: CreateQuizFormProps) {
+  const isMobile = useIsMobile();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
@@ -257,9 +259,10 @@ export default function CreateQuizForm({
         type="button"
         onClick={handleAIGeneration}
         variant="outline"
-        className="flex items-center gap-2 border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
+        className="w-full sm:w-auto flex items-center justify-center gap-2 border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
       >
-        Use AI Generation
+        <Wand2 className="h-4 w-4" />
+        {isMobile ? "AI Generate" : "Use AI Generation"}
       </Button>
 
       <div className="space-y-2">
@@ -287,7 +290,7 @@ export default function CreateQuizForm({
           <SelectTrigger className="bg-gray-800 border-gray-700 text-gray-200">
             <SelectValue placeholder="Select lecture" />
           </SelectTrigger>
-          <SelectContent className="bg-gray-800 border-gray-700 text-gray-200">
+          <SelectContent className="bg-gray-800 border-gray-700 text-gray-200 max-h-60">
             {lectures.map((lecture) => (
               <SelectItem
                 key={lecture.id}
@@ -311,14 +314,14 @@ export default function CreateQuizForm({
             size="sm"
             className="flex items-center gap-2 border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
           >
-            <PlusCircle className="h-4 w-4" /> Add Question
+            <PlusCircle className="h-4 w-4" /> {isMobile ? "" : "Add Question"}
           </Button>
         </div>
 
         {questions.map((question, qIndex) => (
           <div
             key={qIndex}
-            className="p-4 border border-gray-700 bg-gray-800/70 backdrop-blur-sm rounded-md space-y-4"
+            className="p-3 sm:p-4 border border-gray-700 bg-gray-800/70 backdrop-blur-sm rounded-md space-y-4"
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 space-y-2">
@@ -361,16 +364,20 @@ export default function CreateQuizForm({
                     onClick={() => addOption(qIndex)}
                     variant="outline"
                     size="sm"
-                    className="flex items-center gap-2 border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
+                    className="flex items-center gap-1 border-indigo-700 bg-indigo-900/30 text-indigo-300 hover:bg-indigo-800/50"
                   >
-                    <PlusCircle className="h-3 w-3" /> Option
+                    <PlusCircle className="h-3 w-3" />{" "}
+                    {isMobile ? "" : "Option"}
                   </Button>
                 )}
               </div>
 
               {question.options.map((option, oIndex) => (
-                <div key={oIndex} className="flex items-center gap-2">
-                  <div className="flex-1 flex items-center gap-2">
+                <div
+                  key={oIndex}
+                  className="flex flex-col sm:flex-row sm:items-center gap-2"
+                >
+                  <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-2">
                     <Input
                       value={option}
                       onChange={(e) =>
@@ -389,11 +396,11 @@ export default function CreateQuizForm({
                           : "outline"
                       }
                       size="sm"
-                      className={
+                      className={`mt-1 sm:mt-0 ${
                         question.correctOptionIndex === oIndex
                           ? "bg-green-800 text-green-100 hover:bg-green-700"
                           : "border-gray-700 bg-gray-800/70 text-gray-300 hover:bg-gray-700"
-                      }
+                      }`}
                     >
                       Correct
                     </Button>
@@ -405,7 +412,7 @@ export default function CreateQuizForm({
                       onClick={() => removeOption(qIndex, oIndex)}
                       variant="destructive"
                       size="icon"
-                      className="bg-red-900/50 border-red-700 hover:bg-red-800/70"
+                      className="mt-1 sm:mt-0 sm:self-center bg-red-900/50 border-red-700 hover:bg-red-800/70"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -420,7 +427,7 @@ export default function CreateQuizForm({
       <Button
         type="submit"
         disabled={isCreatingQuiz}
-        className={`bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white ${
+        className={`w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white ${
           isCreatingQuiz ? "opacity-70" : ""
         }`}
       >
