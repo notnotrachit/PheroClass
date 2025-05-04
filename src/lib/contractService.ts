@@ -10,7 +10,7 @@ import NotesFactory from './contracts/NotesContract.sol/NotesFactory.json';
 import NotesContract from './contracts/NotesContract.sol/NotesContract.json';
 
 
-const CONTRACT_ADDRESS = '0x27F610994df605E960790F8DD179168a52b14cDC';
+const CONTRACT_ADDRESS = '0x8340d47ae45b9303fCFdeeEaaE4BB0FBd68d5FdA';
 // TODO: Update this with the actual QuizContractFactory address after deployment
 const QUIZ_FACTORY_ADDRESS = '0xC1dc992aFF37C58e3f49478F25Ab0A89a17F00c4';
 // TODO: Update this with the actual NotesFactory address after deployment
