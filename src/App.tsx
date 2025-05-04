@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThirdwebProvider } from "@thirdweb-dev/react";
+import PWAUpdateNotification from "./components/PWAUpdateNotification";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ function App() {
             <TooltipProvider>
               <Toaster />
               <Sonner />
+              <PWAUpdateNotification />
               <DashboardRouter />
             </TooltipProvider>
           </WalletProvider>
